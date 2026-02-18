@@ -1,55 +1,78 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../common/theme/app_theme.dart';
+import '../../common/utils/format_utils.dart';
 import '../../model/processing_record.dart';
-import '../../routes/app_routes.dart';
+import 'widgets/before_after_comparison.dart';
+import 'widgets/stats_row.dart';
 
-/// Minimal result screen — shows the processed image and face count.
-/// Step 3 will add before/after comparison.
+/// Face result screen with before/after comparison, stats, and done button.
 class ResultScreen extends StatelessWidget {
   const ResultScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final record = Get.arguments as ProcessingRecord;
-    final faceCount = record.metadata?['faceCount'] as int? ?? 0;
+    final metadata = record.metadata ?? {};
+    final faceCount = metadata['faceCount'] as int? ?? 0;
+    final processingTimeMs = metadata['processingTimeMs'] as int? ?? 0;
+    final resultFileSize = metadata['resultFileSize'] as int? ?? 0;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Result', style: kFontH2),
         leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: () => Get.offAllNamed(AppRoutes.home),
+          icon: const Icon(Icons.arrow_back),
+          onPressed: Get.back,
         ),
+        title: const Text('Face Result', style: kFontH2),
+        centerTitle: true,
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(24),
-                  child: Image.file(
-                    File(record.resultPath),
-                    fit: BoxFit.contain,
-                    width: double.infinity,
-                  ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            children: [
+              const SizedBox(height: 16),
+              Expanded(
+                child: BeforeAfterComparison(
+                  originalPath: record.originalPath,
+                  resultPath: record.resultPath,
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
-              child: Text(
-                '$faceCount ${faceCount == 1 ? 'face' : 'faces'} detected',
-                style: kFontCaption,
+              const SizedBox(height: 24),
+              StatsRow(
+                stats: [
+                  (label: 'Processing Time', value: formatDuration(processingTimeMs)),
+                  (label: 'Features', value: '$faceCount Face${faceCount == 1 ? '' : 's'}'),
+                  (label: 'File Size', value: formatFileSize(resultFileSize)),
+                ],
               ),
-            ),
-          ],
+              const Spacer(),
+              _buildDoneButton(),
+              const SizedBox(height: 24),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildDoneButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 52,
+      child: ElevatedButton(
+        onPressed: Get.back,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: kColorPrimary,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          textStyle: kFontBodyBold,
+        ),
+        child: const Text('Done'),
       ),
     );
   }

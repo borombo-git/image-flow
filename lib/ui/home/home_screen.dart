@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:image_flow/common/theme/app_theme.dart';
 
+import '../../common/theme/app_theme.dart';
 import 'home_controller.dart';
+import 'widgets/history_grid.dart';
 import 'widgets/home_empty_state.dart';
 import '../capture/capture_bottom_sheet.dart';
 
@@ -33,7 +34,9 @@ class HomeScreen extends GetView<HomeController> {
           ),
         ),
       ),
-      body: const HomeEmptyState(),
+      body: Obx(() => controller.records.isEmpty
+          ? const HomeEmptyState()
+          : HistoryGrid(controller: controller)),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           HapticFeedback.lightImpact();

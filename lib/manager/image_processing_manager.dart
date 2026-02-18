@@ -6,10 +6,9 @@ import 'dart:typed_data';
 import 'package:get/get.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:image/image.dart' as img;
-import 'package:path_provider/path_provider.dart';
-
 import '../common/exceptions/processing_exceptions.dart';
 import '../common/utils/logger.dart';
+import '../common/utils/path_utils.dart';
 import '../model/processing_record.dart';
 import 'history_manager.dart';
 
@@ -57,6 +56,8 @@ class ImageProcessingManager extends GetxController {
     String imagePath, {
     void Function(double progress, String step, String description)? onProgress,
   }) async {
+    final stopwatch = Stopwatch()..start();
+
     // 1. Read image bytes
     onProgress?.call(0.0, 'Loading Image', 'Reading image from storage');
     _log.info('Reading image: $imagePath');
@@ -80,19 +81,32 @@ class ImageProcessingManager extends GetxController {
     final payload = _IsolatePayload(bytes, faceRects);
     final resultBytes = await Isolate.run(() => _processImageInIsolate(payload));
 
-    // 4. Save result to disk
+    // 4. Save result + copy original to documents directory (store filenames only)
     onProgress?.call(0.85, 'Saving Result', 'Writing composite image to storage');
-    final resultPath = await _saveResult(resultBytes);
-    _log.info('Result saved: $resultPath');
+    final resultFileName = await _saveResult(resultBytes);
+    final originalFileName = await copyToDocuments(imagePath);
+    _log.info('Result saved: $resultFileName, original copied: $originalFileName');
 
     // 5. Create history record
+    stopwatch.stop();
+    final resultFile = File('$docsDir/$resultFileName');
+    final resultFileSize = await resultFile.length();
+    _log.info(
+      'Pipeline finished in ${stopwatch.elapsedMilliseconds}ms, '
+      'result size: $resultFileSize bytes',
+    );
+
     final record = ProcessingRecord(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       type: ProcessingType.face,
       createdAt: DateTime.now(),
-      originalPath: imagePath,
-      resultPath: resultPath,
-      metadata: {'faceCount': faceRects.length},
+      originalPath: originalFileName,
+      resultPath: resultFileName,
+      metadata: {
+        'faceCount': faceRects.length,
+        'processingTimeMs': stopwatch.elapsedMilliseconds,
+        'resultFileSize': resultFileSize,
+      },
     );
     await Get.find<HistoryManager>().addRecord(record);
 
@@ -127,12 +141,11 @@ class ImageProcessingManager extends GetxController {
     }
   }
 
-  /// Saves JPEG bytes to app documents directory.
+  /// Saves JPEG bytes to app documents directory. Returns the filename only.
   Future<String> _saveResult(Uint8List bytes) async {
-    final dir = await getApplicationDocumentsDirectory();
     final fileName = 'face_result_${DateTime.now().millisecondsSinceEpoch}.jpg';
-    final file = File('${dir.path}/$fileName');
+    final file = File('$docsDir/$fileName');
     await file.writeAsBytes(bytes);
-    return file.path;
+    return fileName;
   }
 }

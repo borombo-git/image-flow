@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../common/utils/logger.dart';
+import '../../common/widgets/bottom_sheet_container.dart';
 import '../../routes/app_routes.dart';
 import 'widgets/capture_option_tile.dart';
 
@@ -22,25 +23,10 @@ class CaptureBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-      ),
-      padding: const EdgeInsets.fromLTRB(24, 12, 24, 48),
+    return BottomSheetContainer(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Handle
-          Container(
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade300,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          const SizedBox(height: 24),
           CaptureOptionTile(
             icon: Icons.camera_alt_outlined,
             title: 'Camera',
