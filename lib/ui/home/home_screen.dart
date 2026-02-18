@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_flow/common/theme/app_theme.dart';
 
 import 'home_controller.dart';
+import 'widgets/home_empty_state.dart';
+import '../capture/capture_bottom_sheet.dart';
 
 class HomeScreen extends GetView<HomeController> {
   const HomeScreen({super.key});
@@ -10,8 +13,36 @@ class HomeScreen extends GetView<HomeController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('ImageFlow')),
-      body: const Center(child: Text('Hello World', style: kFontBodyMedium)),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        centerTitle: false,
+        title: const Text(
+          'Image Flow 🪄',
+          style: TextStyle(
+            fontFamily: kSatoshi,
+            fontWeight: FontWeight.w900,
+            fontSize: 22,
+            color: kColorFont,
+          ),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(
+            height: 1,
+            color: Colors.black.withValues(alpha: 0.05),
+          ),
+        ),
+      ),
+      body: const HomeEmptyState(),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          HapticFeedback.lightImpact();
+          CaptureBottomSheet.show(context);
+        },
+        backgroundColor: kColorPrimary,
+        shape: const CircleBorder(),
+        child: const Icon(Icons.camera_alt, color: Colors.white),
+      ),
     );
   }
 }
