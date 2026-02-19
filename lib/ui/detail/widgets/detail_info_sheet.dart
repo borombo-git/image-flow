@@ -19,7 +19,7 @@ class DetailInfoSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final metadata = record.metadata ?? {};
-    final faceCount = metadata['faceCount'] as int? ?? 0;
+    final isFace = record.type == ProcessingType.face;
     final processingTimeMs = metadata['processingTimeMs'] as int? ?? 0;
     final resultFileSize = metadata['resultFileSize'] as int? ?? 0;
 
@@ -46,8 +46,9 @@ class DetailInfoSheet extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             _buildStats(
+              isFace: isFace,
               fileSize: resultFileSize,
-              faceCount: faceCount,
+              metadata: metadata,
               processingTimeMs: processingTimeMs,
             ),
             const SizedBox(height: 20),
@@ -104,10 +105,17 @@ class DetailInfoSheet extends StatelessWidget {
   }
 
   Widget _buildStats({
+    required bool isFace,
     required int fileSize,
-    required int faceCount,
+    required Map<String, dynamic> metadata,
     required int processingTimeMs,
   }) {
+    final middleIcon = isFace ? Icons.face_outlined : Icons.article_outlined;
+    final middleLabel = isFace ? 'FACES' : 'BLOCKS';
+    final middleValue = isFace
+        ? '${metadata['faceCount'] as int? ?? 0}'
+        : '${metadata['textBlockCount'] as int? ?? 0}';
+
     return Row(
       children: [
         DetailStatCard(
@@ -117,9 +125,9 @@ class DetailInfoSheet extends StatelessWidget {
         ),
         const SizedBox(width: 10),
         DetailStatCard(
-          icon: Icons.face_outlined,
-          label: 'FACES',
-          value: '$faceCount',
+          icon: middleIcon,
+          label: middleLabel,
+          value: middleValue,
         ),
         const SizedBox(width: 10),
         DetailStatCard(

@@ -61,7 +61,7 @@ class DetailScreen extends StatelessWidget {
               bottom: false,
               child: DetailActionBar(
                 onBack: Get.back,
-                onShare: (origin) => _share(resultFile, origin),
+                onShare: (origin) => _share(record, origin),
                 onDelete: () => _delete(context, record),
               ),
             ),
@@ -109,10 +109,22 @@ class DetailScreen extends StatelessWidget {
     }
   }
 
-  Future<void> _share(File file, Rect shareOrigin) async {
-    debugPrint('📤 [DETAIL] Sharing image');
+  Future<void> _share(ProcessingRecord record, Rect shareOrigin) async {
+    final metadata = record.metadata ?? {};
+    final pdfPath = metadata['pdfPath'] as String?;
+
+    // For documents with a PDF, share the PDF; otherwise share the result image
+    final File shareFile;
+    if (record.type == ProcessingType.document && pdfPath != null) {
+      shareFile = File(resolveDocPath(pdfPath));
+      debugPrint('📤 [DETAIL] Sharing PDF: $pdfPath');
+    } else {
+      shareFile = File(resolveDocPath(record.resultPath));
+      debugPrint('📤 [DETAIL] Sharing image');
+    }
+
     await Share.shareXFiles(
-      [XFile(file.path)],
+      [XFile(shareFile.path)],
       sharePositionOrigin: shareOrigin,
     );
   }

@@ -1,60 +1,46 @@
 import 'dart:io';
-import 'dart:isolate';
-import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:get/get.dart';
-import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
-import 'package:image/image.dart' as img;
+
 import '../common/exceptions/processing_exceptions.dart';
 import '../common/utils/logger.dart';
 import '../common/utils/path_utils.dart';
 import '../model/processing_record.dart';
-import 'history_manager.dart';
+import 'document_processor.dart';
+import 'face_processor.dart';
 
 const _log = AppLogger('🧠', 'PROCESSING');
 
-/// Payload sent to the processing isolate.
-class _IsolatePayload {
-  final Uint8List bytes;
-  final List<List<int>> boxes; // [x, y, w, h] per face
+/// Progress callback: (progress 0→1, step title, step description).
+typedef ProgressCallback = void Function(
+  double progress,
+  String step,
+  String description,
+);
 
-  const _IsolatePayload(this.bytes, this.boxes);
+/// Saves JPEG bytes to app documents directory. Returns the filename only.
+/// Shared by [FaceProcessor] and [DocumentProcessor].
+Future<String> saveResult(Uint8List bytes, {required String prefix}) async {
+  final fileName = '$prefix${DateTime.now().millisecondsSinceEpoch}.jpg';
+  final file = File('$docsDir/$fileName');
+  await file.writeAsBytes(bytes);
+  return fileName;
 }
 
-/// Top-level function for [Isolate.run].
-/// Decodes image, bakes EXIF orientation, applies grayscale to each face region,
-/// composites back, and returns JPEG bytes.
-Uint8List _processImageInIsolate(_IsolatePayload payload) {
-  final decoded = img.decodeImage(payload.bytes);
-  if (decoded == null) throw Exception('Failed to decode image');
-
-  final image = img.bakeOrientation(decoded);
-
-  for (final box in payload.boxes) {
-    final x = box[0].clamp(0, image.width - 1);
-    final y = box[1].clamp(0, image.height - 1);
-    final w = min(box[2], image.width - x);
-    final h = min(box[3], image.height - y);
-    if (w <= 0 || h <= 0) continue;
-
-    final face = img.copyCrop(image, x: x, y: y, width: w, height: h);
-    img.grayscale(face);
-    img.compositeImage(image, face, dstX: x, dstY: y);
-  }
-
-  return img.encodeJpg(image, quality: 90);
-}
-
-/// Global singleton that runs image processing pipelines.
+/// Global singleton that auto-detects content type and delegates to the
+/// appropriate processor.
 class ImageProcessingManager extends GetxController {
-  /// Runs the face detection + grayscale pipeline.
+  final _faceProcessor = FaceProcessor();
+  final _documentProcessor = DocumentProcessor();
+
+  /// Auto-detects content type and runs the appropriate pipeline.
   ///
-  /// [onProgress] is called with (progress 0→1, step title, step description).
-  /// Throws [NoFacesDetectedException] when no faces are found.
-  Future<ProcessingRecord> processFaces(
+  /// Heuristic: text recognizer first (cheap) — if >= 3 text blocks → document
+  /// flow, else → face detector fallback, else → [NoContentDetectedException].
+  Future<ProcessingRecord> processImage(
     String imagePath, {
-    void Function(double progress, String step, String description)? onProgress,
+    ProgressCallback? onProgress,
   }) async {
     final stopwatch = Stopwatch()..start();
 
@@ -63,89 +49,41 @@ class ImageProcessingManager extends GetxController {
     _log.info('Reading image: $imagePath');
     final bytes = await File(imagePath).readAsBytes();
 
-    // 2. ML Kit face detection (must run on main isolate — platform channels)
+    // 2. Text detection (cheap — run first for auto-detection)
+    onProgress?.call(0.1, 'Analyzing Content', 'Detecting content type');
+    _log.info('Running text recognition for auto-detection');
+    final textBlocks = await _documentProcessor.detect(imagePath);
+    _log.info('Text blocks found: ${textBlocks.length}');
+
+    if (textBlocks.length >= 3) {
+      _log.info('Document detected (${textBlocks.length} text blocks)');
+      return _documentProcessor.process(
+        imagePath,
+        bytes,
+        textBlocks,
+        stopwatch: stopwatch,
+        onProgress: onProgress,
+      );
+    }
+
+    // 3. Face detection fallback
     onProgress?.call(0.2, 'Detecting Faces', 'Scanning for faces with ML Kit');
-    _log.info('Running ML Kit face detection');
-    final faceRects = await _detectFaces(imagePath);
+    _log.info('Running face detection fallback');
+    final faceRects = await _faceProcessor.detect(imagePath);
 
-    if (faceRects.isEmpty) {
-      _log.info('No faces detected');
-      throw const NoFacesDetectedException();
+    if (faceRects.isNotEmpty) {
+      _log.info('Detected ${faceRects.length} face(s)');
+      return _faceProcessor.process(
+        imagePath,
+        bytes,
+        faceRects,
+        stopwatch: stopwatch,
+        onProgress: onProgress,
+      );
     }
-    _log.info('Detected ${faceRects.length} face(s)');
 
-    // 3. Heavy image work in a separate isolate
-    onProgress?.call(0.5, 'Applying Filter', 'Converting faces to black & white');
-    _log.info('Starting isolate for image manipulation');
-
-    final payload = _IsolatePayload(bytes, faceRects);
-    final resultBytes = await Isolate.run(() => _processImageInIsolate(payload));
-
-    // 4. Save result + copy original to documents directory (store filenames only)
-    onProgress?.call(0.85, 'Saving Result', 'Writing composite image to storage');
-    final resultFileName = await _saveResult(resultBytes);
-    final originalFileName = await copyToDocuments(imagePath);
-    _log.info('Result saved: $resultFileName, original copied: $originalFileName');
-
-    // 5. Create history record
-    stopwatch.stop();
-    final resultFile = File('$docsDir/$resultFileName');
-    final resultFileSize = await resultFile.length();
-    _log.info(
-      'Pipeline finished in ${stopwatch.elapsedMilliseconds}ms, '
-      'result size: $resultFileSize bytes',
-    );
-
-    final record = ProcessingRecord(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      type: ProcessingType.face,
-      createdAt: DateTime.now(),
-      originalPath: originalFileName,
-      resultPath: resultFileName,
-      metadata: {
-        'faceCount': faceRects.length,
-        'processingTimeMs': stopwatch.elapsedMilliseconds,
-        'resultFileSize': resultFileSize,
-      },
-    );
-    await Get.find<HistoryManager>().addRecord(record);
-
-    onProgress?.call(1.0, 'Done', 'Processing complete');
-    _log.info('Face processing complete — record ${record.id}');
-    return record;
-  }
-
-  /// Runs ML Kit [FaceDetector] and returns bounding boxes as `[x, y, w, h]`.
-  Future<List<List<int>>> _detectFaces(String imagePath) async {
-    final detector = FaceDetector(
-      options: FaceDetectorOptions(
-        performanceMode: FaceDetectorMode.accurate,
-      ),
-    );
-
-    try {
-      final inputImage = InputImage.fromFilePath(imagePath);
-      final faces = await detector.processImage(inputImage);
-
-      return faces.map((f) {
-        final box = f.boundingBox;
-        return [
-          box.left.round(),
-          box.top.round(),
-          box.width.round(),
-          box.height.round(),
-        ];
-      }).toList();
-    } finally {
-      await detector.close();
-    }
-  }
-
-  /// Saves JPEG bytes to app documents directory. Returns the filename only.
-  Future<String> _saveResult(Uint8List bytes) async {
-    final fileName = 'face_result_${DateTime.now().millisecondsSinceEpoch}.jpg';
-    final file = File('$docsDir/$fileName');
-    await file.writeAsBytes(bytes);
-    return fileName;
+    // 4. Nothing detected
+    _log.info('No content detected — neither text nor faces');
+    throw const NoContentDetectedException();
   }
 }

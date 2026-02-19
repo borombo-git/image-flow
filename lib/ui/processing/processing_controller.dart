@@ -39,7 +39,7 @@ class ProcessingController extends GetxController {
     }
 
     try {
-      final record = await _processingManager.processFaces(
+      final record = await _processingManager.processImage(
         imagePath.value,
         onProgress: (p, step, description) {
           _log.info('Progress: ${(p * 100).toInt()}% — $step');
@@ -51,6 +51,14 @@ class ProcessingController extends GetxController {
 
       _log.info('Processing complete — navigating to result');
       Get.offNamed(AppRoutes.result, arguments: record);
+    } on NoContentDetectedException {
+      _log.info('No content detected — showing error dialog');
+      _showErrorDialog(
+        title: 'No Content Detected',
+        message:
+            'Could not detect faces or document text in this image. '
+            'Try a different photo.',
+      );
     } on NoFacesDetectedException {
       _log.info('No faces found — showing error dialog');
       _showErrorDialog(

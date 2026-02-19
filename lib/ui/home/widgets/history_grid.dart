@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:open_filex/open_filex.dart';
 
+import '../../../common/utils/path_utils.dart';
+import '../../../model/processing_record.dart';
 import '../../../routes/app_routes.dart';
 import '../home_controller.dart';
 import 'delete_record_sheet.dart';
@@ -12,6 +15,17 @@ class HistoryGrid extends StatelessWidget {
   const HistoryGrid({super.key, required this.controller});
 
   final HomeController controller;
+
+  void _onTap(ProcessingRecord record) {
+    if (record.type == ProcessingType.document) {
+      final pdfPath = (record.metadata ?? {})['pdfPath'] as String?;
+      if (pdfPath != null) {
+        OpenFilex.open(resolveDocPath(pdfPath));
+        return;
+      }
+    }
+    Get.toNamed(AppRoutes.detail, arguments: record);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,10 +54,7 @@ class HistoryGrid extends StatelessWidget {
               child: HistoryCard(
                 key: ValueKey(record.id),
                 record: record,
-                onTap: () => Get.toNamed(
-                  AppRoutes.detail,
-                  arguments: record,
-                ),
+                onTap: () => _onTap(record),
                 onLongPress: () {
                   HapticFeedback.mediumImpact();
                   DeleteRecordSheet.show(
