@@ -6,6 +6,7 @@ import 'package:image_flow/common/theme/app_theme.dart';
 
 import 'processing_controller.dart';
 import 'widgets/scan_line_overlay.dart';
+import 'widgets/smooth_progress_bar.dart';
 
 class ProcessingScreen extends GetView<ProcessingController> {
   const ProcessingScreen({super.key});
@@ -34,7 +35,9 @@ class ProcessingScreen extends GetView<ProcessingController> {
                               File(controller.imagePath.value),
                               fit: BoxFit.cover,
                             ),
-                            const ScanLineOverlay(),
+                            ScanLineOverlay(
+                              animate: !controller.hasError.value,
+                            ),
                           ],
                         ),
                       ),
@@ -47,12 +50,18 @@ class ProcessingScreen extends GetView<ProcessingController> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Obx(() => LinearProgressIndicator(
+                  Obx(() => SmoothProgressBar(
                         value: controller.progress.value,
-                        borderRadius: BorderRadius.circular(4),
-                        minHeight: 6,
                       )),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 12),
+                  Obx(() => Text(
+                        '${(controller.progress.value * 100).toInt()}%',
+                        style: kFontCaption.copyWith(
+                          color: kColorPrimary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      )),
+                  const SizedBox(height: 12),
                   Obx(() => Text(
                         controller.currentStep.value,
                         style: kFontH2,

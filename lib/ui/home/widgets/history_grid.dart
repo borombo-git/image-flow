@@ -27,21 +27,32 @@ class HistoryGrid extends StatelessWidget {
         itemCount: controller.records.length,
         itemBuilder: (context, index) {
           final record = controller.records[index];
+          final isDeleting = controller.deletingId.value == record.id;
 
-          return HistoryCard(
-            key: ValueKey(record.id),
-            record: record,
-            onTap: () => Get.toNamed(
-              AppRoutes.result,
-              arguments: record,
+          return AnimatedScale(
+            scale: isDeleting ? 0.85 : 1.0,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            child: AnimatedOpacity(
+              opacity: isDeleting ? 0.0 : 1.0,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              child: HistoryCard(
+                key: ValueKey(record.id),
+                record: record,
+                onTap: () => Get.toNamed(
+                  AppRoutes.result,
+                  arguments: record,
+                ),
+                onLongPress: () {
+                  HapticFeedback.mediumImpact();
+                  DeleteRecordSheet.show(
+                    context,
+                    onConfirm: () => controller.deleteRecord(record.id),
+                  );
+                },
+              ),
             ),
-            onLongPress: () {
-              HapticFeedback.mediumImpact();
-              DeleteRecordSheet.show(
-                context,
-                onConfirm: () => controller.deleteRecord(record.id),
-              );
-            },
           );
         },
       ),

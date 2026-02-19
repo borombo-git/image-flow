@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:image_flow/common/theme/app_theme.dart';
 
 class ScanLineOverlay extends StatefulWidget {
-  const ScanLineOverlay({super.key});
+  const ScanLineOverlay({super.key, this.animate = true});
+
+  final bool animate;
 
   @override
   State<ScanLineOverlay> createState() => _ScanLineOverlayState();
@@ -19,6 +21,14 @@ class _ScanLineOverlayState extends State<ScanLineOverlay>
       vsync: this,
       duration: const Duration(milliseconds: 2000),
     )..repeat(reverse: true);
+  }
+
+  @override
+  void didUpdateWidget(ScanLineOverlay oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!widget.animate && _controller.isAnimating) {
+      _controller.stop();
+    }
   }
 
   @override
