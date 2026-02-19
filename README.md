@@ -3,7 +3,7 @@
 A Flutter image processing app that auto-detects content type (faces or documents) and applies the appropriate processing pipeline.
 
 - **Face Flow:** ML Kit face detection → crop faces → B&W filter → composite result
-- **Document Flow:** ML Kit text recognition → edge detection → perspective transform → PDF export
+- **Document Flow:** ML Kit text recognition → luminance edge detection → crop + enhance → PDF export
 
 ## 🛠️ Tools & Workflow
 
@@ -44,9 +44,13 @@ flutter test        # Run tests
 | `get` | State management, DI, navigation |
 | `google_mlkit_face_detection` | Face detection in images |
 | `google_mlkit_text_recognition` | Document/text detection |
-| `image` | Pixel-level image manipulation (crop, B&W, composite) |
+| `image` | Pixel-level image manipulation (crop, B&W, composite, luminance scanning) |
 | `hive` / `hive_flutter` | Local storage for processing history |
+| `pdf` / `printing` | PDF generation from processed documents |
+| `open_filex` | Open PDF in system default viewer (iOS/Android) |
 | `image_picker` | Camera/gallery image selection |
+| `share_plus` | Share files (images, PDFs) |
+| `gal` | Save images to device photo gallery |
 | `path_provider` | Device storage paths |
 | `intl` | Date/time formatting |
 
@@ -55,18 +59,25 @@ flutter test        # Run tests
 **MVVM with GetX**, feature-based folder structure. Two controller layers:
 
 - **Managers** (`GetxController` + `permanent: true`) — global singletons for shared business logic (`ImageProcessingManager`, `HistoryManager`)
+- **Processors** — plain classes with no reactive state, handling pipeline-specific logic (`FaceProcessor`, `DocumentProcessor`)
 - **Screen controllers** (`GetxController`) — per-screen logic, only when the screen has local state. Skipped for simple screens that just read from a manager.
 
 ```
 lib/
-├── manager/          # Global singletons (processing, history)
+├── manager/          # Global singletons + processors
+│   ├── image_processing_manager.dart  # Orchestrator: auto-detection + EXIF normalization
+│   ├── face_processor.dart            # Face detection + grayscale pipeline
+│   ├── document_processor.dart        # Text detection + edge detection + PDF
+│   └── history_manager.dart           # Hive CRUD
 ├── ui/
 │   ├── home/         # History grid + FAB
 │   ├── capture/      # Camera/gallery picker (bottom sheet)
 │   ├── processing/   # Progress screen with step descriptions
-│   └── result/       # Before/after comparison + stats
+│   ├── result/       # Type router → face or document result view
+│   └── detail/       # Full-screen history detail (face only)
 ├── model/            # Data models (ProcessingRecord)
 ├── common/
+│   ├── exceptions/   # Typed processing exceptions
 │   ├── theme/        # Colors, typography
 │   ├── widgets/      # Shared widgets (BottomSheetContainer)
 │   └── utils/        # Path resolution, formatting, logging
@@ -97,7 +108,7 @@ The core feature: pick an image → detect faces with ML Kit → apply grayscale
 
 Key trade-off: ML Kit must run on the main isolate (platform channels), but the `image` package work is pure Dart and moves to a background isolate. This split keeps the UI responsive — the progress screen updates smoothly while processing happens.
 
-`bakeOrientation` is called before any cropping to handle EXIF rotation, which is critical on iOS where camera images come with orientation metadata rather than rotated pixels.
+`bakeOrientation` is called before any cropping to handle EXIF rotation, which is critical on iOS where camera images come with orientation metadata rather than rotated pixels. (This later evolved — see Step 5 improvements.)
 
 ### Step 3 — Result Screen
 
@@ -115,3 +126,13 @@ This completed the full loop: capture → process → result → home → tap to
 - `BottomSheetContainer` — shared wrapper used by both capture and delete sheets
 - `format_utils.dart` — centralized date, duration, and file size formatting
 - `path_utils.dart` — filename storage and runtime path resolution
+
+### Step 5 — Document Pipeline, Auto-Detection & Detail Screen
+
+Added auto-detection as the single entry point: text recognizer first (cheap), >= 3 text blocks → document flow, else → face detection fallback. Split the manager into an orchestrator + dedicated `FaceProcessor` / `DocumentProcessor`.
+
+**Document pipeline:** text recognition → luminance-based edge detection → crop + enhance → PDF. Initial approach used text block bounds + padding, but it clipped text — replaced with luminance scanning that finds actual paper edges by tracking brightness transitions. Perspective transform was skipped (would need OpenCV or custom homography — trade-off for pure Dart).
+
+**EXIF fix:** Real camera photos had offset face overlays while AI images worked fine. `image_picker` on iOS writes correctly-oriented pixels but keeps a stale EXIF tag, causing double rotation. Fixed with a normalize-once pattern: bake orientation upfront, feed the same normalized image to both ML Kit and the processing isolate.
+
+Detail screen with type-aware stats and PDF sharing. Document taps from the home grid open the PDF directly in the system viewer.

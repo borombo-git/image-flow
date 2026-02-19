@@ -27,12 +27,11 @@ class _IsolatePayload {
 }
 
 /// Top-level function for [Isolate.run].
-/// Decodes → bakes orientation → grayscale each face region → composite → JPEG.
+/// Decodes pre-normalized image → grayscale each face region → composite → JPEG.
+/// Bytes are already EXIF-corrected by the orchestrator, so no bakeOrientation needed.
 Uint8List _processInIsolate(_IsolatePayload payload) {
-  final decoded = img.decodeImage(payload.bytes);
-  if (decoded == null) throw Exception('Failed to decode image');
-
-  final image = img.bakeOrientation(decoded);
+  final image = img.decodeImage(payload.bytes);
+  if (image == null) throw Exception('Failed to decode image');
 
   for (final box in payload.boxes) {
     final x = box[0].clamp(0, image.width - 1);
