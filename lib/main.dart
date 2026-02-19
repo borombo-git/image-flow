@@ -7,6 +7,10 @@ import 'model/processing_record.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Allow caching more decoded images (default ~100 MB may evict on grid rebuild)
+  PaintingBinding.instance.imageCache.maximumSizeBytes = 200 << 20;
+
   await Hive.initFlutter();
   await initDocsDir();
 

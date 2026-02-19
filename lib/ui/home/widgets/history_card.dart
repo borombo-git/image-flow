@@ -53,22 +53,26 @@ class HistoryCard extends StatelessWidget {
       child: Stack(
         children: [
           // Result image
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(16),
-              bottom: Radius.circular(8),
-            ),
-            child: SizedBox.expand(
-              child: Image.file(
-                File(resolveDocPath(record.resultPath)),
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(
-                  color: kColorBackground,
-                  child: const Center(
-                    child: Icon(
-                      Icons.broken_image_outlined,
-                      color: kColorFontSecondary,
-                      size: 32,
+          Hero(
+            tag: 'record_${record.id}',
+            child: ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(16),
+                bottom: Radius.circular(8),
+              ),
+              child: SizedBox.expand(
+                child: Image.file(
+                  File(resolveDocPath(record.resultPath)),
+                  fit: BoxFit.cover,
+                  gaplessPlayback: true,
+                  errorBuilder: (_, __, ___) => Container(
+                    color: kColorBackground,
+                    child: const Center(
+                      child: Icon(
+                        Icons.broken_image_outlined,
+                        color: kColorFontSecondary,
+                        size: 32,
+                      ),
                     ),
                   ),
                 ),

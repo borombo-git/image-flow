@@ -41,7 +41,7 @@ class HistoryGrid extends StatelessWidget {
                 key: ValueKey(record.id),
                 record: record,
                 onTap: () => Get.toNamed(
-                  AppRoutes.result,
+                  AppRoutes.detail,
                   arguments: record,
                 ),
                 onLongPress: () {

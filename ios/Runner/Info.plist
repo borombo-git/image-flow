@@ -45,6 +45,8 @@
 	<string>ImageFlow needs camera access to capture photos for processing</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>ImageFlow needs photo library access to import images for processing</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>ImageFlow needs photo library access to save processed images</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
