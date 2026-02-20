@@ -6,12 +6,15 @@ import 'package:get/get.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../common/theme/app_theme.dart';
+import '../../common/utils/logger.dart';
 import '../../common/utils/path_utils.dart';
-import '../../manager/history_manager.dart';
 import '../../model/processing_record.dart';
+import '../../ui/home/home_controller.dart';
 import '../../ui/home/widgets/delete_record_sheet.dart';
 import 'widgets/detail_action_bar.dart';
 import 'widgets/detail_info_sheet.dart';
+
+const _log = AppLogger('🔍', 'DETAIL');
 
 /// Full-screen detail view for a processing record from history.
 class DetailScreen extends StatelessWidget {
@@ -19,7 +22,11 @@ class DetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final record = Get.arguments as ProcessingRecord;
+    final record = Get.arguments as ProcessingRecord?;
+    if (record == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => Get.back());
+      return const SizedBox.shrink();
+    }
     final resultFile = File(resolveDocPath(record.resultPath));
 
     return Scaffold(
@@ -86,7 +93,7 @@ class DetailScreen extends StatelessWidget {
     try {
       await Gal.requestAccess(toAlbum: true);
       await Gal.putImage(path, album: 'ImageFlow');
-      debugPrint('📸 [DETAIL] Image saved to Photos');
+      _log.info('Image saved to Photos');
       Get.snackbar(
         'Saved',
         'Image saved to Photos',
@@ -97,7 +104,7 @@ class DetailScreen extends StatelessWidget {
         duration: const Duration(seconds: 2),
       );
     } catch (e) {
-      debugPrint('📸 [DETAIL] Save failed: $e');
+      _log.error('Save failed', e);
       Get.snackbar(
         'Error',
         'Could not save image to Photos',
@@ -117,10 +124,10 @@ class DetailScreen extends StatelessWidget {
     final File shareFile;
     if (record.type == ProcessingType.document && pdfPath != null) {
       shareFile = File(resolveDocPath(pdfPath));
-      debugPrint('📤 [DETAIL] Sharing PDF: $pdfPath');
+      _log.info('Sharing PDF: $pdfPath');
     } else {
       shareFile = File(resolveDocPath(record.resultPath));
-      debugPrint('📤 [DETAIL] Sharing image');
+      _log.info('Sharing image');
     }
 
     await Share.shareXFiles(
@@ -133,8 +140,8 @@ class DetailScreen extends StatelessWidget {
     DeleteRecordSheet.show(
       context,
       onConfirm: () {
-        Get.find<HistoryManager>().deleteRecord(record.id);
-        debugPrint('🗑️ [DETAIL] Record deleted: ${record.id}');
+        Get.find<HomeController>().deleteRecord(record.id);
+        _log.info('Record deleted: ${record.id}');
         Get.back();
       },
     );

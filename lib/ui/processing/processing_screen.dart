@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:image_flow/common/theme/app_theme.dart';
+import '../../common/theme/app_theme.dart';
 
 import 'processing_controller.dart';
 import 'widgets/scan_line_overlay.dart';
@@ -13,8 +13,13 @@ class ProcessingScreen extends GetView<ProcessingController> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Processing', style: kFontH2)),
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: const Text('Processing', style: kFontH2),
+      ),
       body: SafeArea(
         child: Column(
           children: [
@@ -34,6 +39,13 @@ class ProcessingScreen extends GetView<ProcessingController> {
                             Image.file(
                               File(controller.imagePath.value),
                               fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => const Center(
+                                child: Icon(
+                                  Icons.broken_image_outlined,
+                                  color: kColorFontSecondary,
+                                  size: 48,
+                                ),
+                              ),
                             ),
                             ScanLineOverlay(
                               animate: !controller.hasError.value,
@@ -79,6 +91,7 @@ class ProcessingScreen extends GetView<ProcessingController> {
           ],
         ),
       ),
+    ),
     );
   }
 }

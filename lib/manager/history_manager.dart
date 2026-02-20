@@ -1,8 +1,13 @@
-import 'package:flutter/foundation.dart';
+import 'dart:io';
+
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 
+import '../common/utils/logger.dart';
+import '../common/utils/path_utils.dart';
 import '../model/processing_record.dart';
+
+const _log = AppLogger('📂', 'HISTORY');
 
 /// Manages processing history persistence with Hive.
 class HistoryManager extends GetxController {
@@ -20,7 +25,7 @@ class HistoryManager extends GetxController {
   Future<void> _openBox() async {
     _box = await Hive.openBox<ProcessingRecord>(_boxName);
     _loadRecords();
-    debugPrint('📂 [HISTORY] Box opened – ${records.length} records loaded');
+    _log.info('Box opened – ${records.length} records loaded');
   }
 
   void _loadRecords() {
@@ -32,13 +37,34 @@ class HistoryManager extends GetxController {
   Future<void> addRecord(ProcessingRecord record) async {
     await _box.put(record.id, record);
     records.insert(0, record);
-    debugPrint('📂 [HISTORY] Record added: ${record.id} (${record.type.name})');
+    _log.info('Record added: ${record.id} (${record.type.name})');
   }
 
   Future<void> deleteRecord(String id) async {
+    final record = getRecord(id);
+    if (record != null) {
+      await _deleteFiles(record);
+    }
     await _box.delete(id);
     records.removeWhere((r) => r.id == id);
-    debugPrint('📂 [HISTORY] Record deleted: $id');
+    _log.info('Record deleted: $id');
+  }
+
+  Future<void> _deleteFiles(ProcessingRecord record) async {
+    final paths = [
+      resolveDocPath(record.originalPath),
+      resolveDocPath(record.resultPath),
+      if (record.metadata?['pdfPath'] != null)
+        resolveDocPath(record.metadata!['pdfPath'] as String),
+    ];
+    for (final path in paths) {
+      try {
+        final file = File(path);
+        if (await file.exists()) await file.delete();
+      } catch (e) {
+        _log.error('Failed to delete file: $path', e);
+      }
+    }
   }
 
   ProcessingRecord? getRecord(String id) {

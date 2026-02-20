@@ -11,7 +11,11 @@ class ResultScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final record = Get.arguments as ProcessingRecord;
+    final record = Get.arguments as ProcessingRecord?;
+    if (record == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => Get.back());
+      return const SizedBox.shrink();
+    }
 
     return record.type == ProcessingType.face
         ? FaceResultView(record: record)

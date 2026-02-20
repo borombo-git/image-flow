@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../common/theme/app_theme.dart';
 import '../../common/utils/logger.dart';
 import '../../common/widgets/bottom_sheet_container.dart';
 import '../../routes/app_routes.dart';
@@ -38,7 +39,7 @@ class CaptureBottomSheet extends StatelessWidget {
             icon: Icons.photo_library_outlined,
             title: 'Photo Gallery',
             subtitle: 'Import from device',
-            color: const Color(0xFF7C3AED),
+            color: kColorGallery,
             onTap: () => _pickImage(ImageSource.gallery),
           ),
         ],
@@ -51,7 +52,11 @@ class CaptureBottomSheet extends StatelessWidget {
     // Close bottom sheet first so the picker presents full-screen from root
     Get.back();
     try {
-      final file = await ImagePicker().pickImage(source: source);
+      final file = await ImagePicker().pickImage(
+        source: source,
+        maxWidth: 2048,
+        maxHeight: 2048,
+      );
       if (file == null) {
         _log.info('Selection cancelled');
         return;

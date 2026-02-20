@@ -49,6 +49,7 @@ class ProcessingController extends GetxController {
         },
       );
 
+      if (isClosed) return;
       _log.info('Processing complete — navigating to result');
       Get.offNamed(AppRoutes.result, arguments: record);
     } on NoContentDetectedException {
@@ -58,13 +59,6 @@ class ProcessingController extends GetxController {
         message:
             'Could not detect faces or document text in this image. '
             'Try a different photo.',
-      );
-    } on NoFacesDetectedException {
-      _log.info('No faces found — showing error dialog');
-      _showErrorDialog(
-        title: 'No Faces Found',
-        message:
-            'Could not detect any faces in this image. Try a different photo.',
       );
     } catch (e, stack) {
       _log.error('Processing failed', e, stack);

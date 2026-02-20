@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:image_flow/common/theme/app_theme.dart';
+import '../../../common/theme/app_theme.dart';
 
 class CaptureOptionTile extends StatelessWidget {
   final IconData icon;

@@ -59,6 +59,7 @@ class BeforeAfterComparison extends StatelessWidget {
         child: Image.file(
           File(resolveDocPath(originalPath)),
           fit: BoxFit.cover,
+          gaplessPlayback: true,
           errorBuilder: (_, __, ___) => Container(
             color: kColorBackground,
             child: const Center(
@@ -92,6 +93,24 @@ class BeforeAfterComparison extends StatelessWidget {
             Image.file(
               File(resolveDocPath(resultPath)),
               fit: BoxFit.cover,
+              gaplessPlayback: true,
+              errorBuilder: (_, __, ___) => Container(
+                color: kColorBackground,
+                child: const Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.broken_image_outlined,
+                        color: kColorFontSecondary,
+                        size: 32,
+                      ),
+                      SizedBox(height: 8),
+                      Text('Unavailable', style: kFontCaption),
+                    ],
+                  ),
+                ),
+              ),
             ),
             Positioned(
               right: 8,

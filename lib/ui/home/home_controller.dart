@@ -19,7 +19,4 @@ class HomeController extends GetxController {
     deletingId.value = null;
   }
 
-  Future<void> restoreRecord(ProcessingRecord record) async {
-    await _history.addRecord(record);
-  }
 }

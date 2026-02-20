@@ -39,6 +39,7 @@ class HomeScreen extends GetView<HomeController> {
           : HistoryGrid(controller: controller)),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
+          if (Get.isBottomSheetOpen ?? false) return;
           HapticFeedback.lightImpact();
           CaptureBottomSheet.show(context);
         },

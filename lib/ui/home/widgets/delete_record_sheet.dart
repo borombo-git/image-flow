@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../../../common/theme/app_theme.dart';
 import '../../../common/widgets/bottom_sheet_container.dart';
@@ -39,7 +40,7 @@ class DeleteRecordSheet extends StatelessWidget {
             height: 48,
             child: ElevatedButton(
               onPressed: () {
-                Navigator.pop(context);
+                Get.back();
                 onConfirm();
               },
               style: ElevatedButton.styleFrom(
@@ -58,7 +59,7 @@ class DeleteRecordSheet extends StatelessWidget {
             width: double.infinity,
             height: 48,
             child: TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: Get.back,
               style: TextButton.styleFrom(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),

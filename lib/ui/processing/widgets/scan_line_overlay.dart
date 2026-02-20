@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:image_flow/common/theme/app_theme.dart';
+import '../../../common/theme/app_theme.dart';
 
 class ScanLineOverlay extends StatefulWidget {
   const ScanLineOverlay({super.key, this.animate = true});

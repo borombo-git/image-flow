@@ -97,6 +97,7 @@ class DocumentResultView extends StatelessWidget {
                     child: Image.file(
                       File(resolveDocPath(record.resultPath)),
                       fit: BoxFit.cover,
+                      gaplessPlayback: true,
                       errorBuilder: (_, __, ___) => Container(
                         color: Colors.grey.shade100,
                         child: const Center(
@@ -119,7 +120,7 @@ class DocumentResultView extends StatelessWidget {
                   width: 32,
                   height: 32,
                   decoration: const BoxDecoration(
-                    color: Color(0xFF22C55E),
+                    color: kColorSuccess,
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.check, color: Colors.white, size: 20),
@@ -138,12 +139,12 @@ class DocumentResultView extends StatelessWidget {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFEE2E2),
+                    color: kColorDangerLight,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(
                     Icons.description_outlined,
-                    color: Color(0xFFEF4444),
+                    color: kColorDanger,
                     size: 22,
                   ),
                 ),
@@ -160,7 +161,7 @@ class DocumentResultView extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        '${formatFileSize(pdfFileSize)} · Just now',
+                        '${formatFileSize(pdfFileSize)} · ${formatDate(record.createdAt)}',
                         style: kFontCaption,
                       ),
                     ],

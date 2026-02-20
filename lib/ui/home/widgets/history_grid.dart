@@ -11,20 +11,34 @@ import 'delete_record_sheet.dart';
 import 'history_card.dart';
 
 /// 2-column grid of history cards with long-press delete.
-class HistoryGrid extends StatelessWidget {
+class HistoryGrid extends StatefulWidget {
   const HistoryGrid({super.key, required this.controller});
 
   final HomeController controller;
 
-  void _onTap(ProcessingRecord record) {
+  @override
+  State<HistoryGrid> createState() => _HistoryGridState();
+}
+
+class _HistoryGridState extends State<HistoryGrid> {
+  bool _navigating = false;
+
+  HomeController get controller => widget.controller;
+
+  Future<void> _onTap(ProcessingRecord record) async {
+    if (_navigating) return;
+    _navigating = true;
+
     if (record.type == ProcessingType.document) {
       final pdfPath = (record.metadata ?? {})['pdfPath'] as String?;
       if (pdfPath != null) {
-        OpenFilex.open(resolveDocPath(pdfPath));
+        await OpenFilex.open(resolveDocPath(pdfPath));
+        _navigating = false;
         return;
       }
     }
-    Get.toNamed(AppRoutes.detail, arguments: record);
+    await Get.toNamed(AppRoutes.detail, arguments: record);
+    _navigating = false;
   }
 
   @override

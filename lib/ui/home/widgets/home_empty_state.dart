@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:image_flow/common/theme/app_theme.dart';
+import '../../../common/theme/app_theme.dart';
 
 class HomeEmptyState extends StatelessWidget {
   const HomeEmptyState({super.key});

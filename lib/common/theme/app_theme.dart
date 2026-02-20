@@ -19,6 +19,10 @@ const kColorFont = Color(0xFF111827);
 const kColorFontSecondary = Color(0xFF6B7280);
 const kColorBadgeFace = Color(0xFF8B5CF6);
 const kColorBadgeDoc = Color(0xFFF59E0B);
+const kColorSuccess = Color(0xFF22C55E);
+const kColorDanger = Color(0xFFEF4444);
+const kColorDangerLight = Color(0xFFFEE2E2);
+const kColorGallery = Color(0xFF7C3AED);
 
 // TEXT STYLES
 const kFontTitle = TextStyle(
