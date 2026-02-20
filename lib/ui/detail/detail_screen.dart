@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:gal/gal.dart';
 import 'package:get/get.dart';
 import 'package:share_plus/share_plus.dart';
@@ -8,6 +9,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../common/theme/app_theme.dart';
 import '../../common/utils/logger.dart';
 import '../../common/utils/path_utils.dart';
+import '../../common/utils/snackbar_utils.dart';
 import '../../model/processing_record.dart';
 import '../../ui/home/home_controller.dart';
 import '../../ui/home/widgets/delete_record_sheet.dart';
@@ -29,7 +31,9 @@ class DetailScreen extends StatelessWidget {
     }
     final resultFile = File(resolveDocPath(record.resultPath));
 
-    return Scaffold(
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
         fit: StackFit.expand,
@@ -86,6 +90,7 @@ class DetailScreen extends StatelessWidget {
           ),
         ],
       ),
+    ),
     );
   }
 
@@ -93,26 +98,12 @@ class DetailScreen extends StatelessWidget {
     try {
       await Gal.requestAccess(toAlbum: true);
       await Gal.putImage(path, album: 'ImageFlow');
+      HapticFeedback.mediumImpact();
       _log.info('Image saved to Photos');
-      Get.snackbar(
-        'Saved',
-        'Image saved to Photos',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: kColorFont,
-        colorText: Colors.white,
-        margin: const EdgeInsets.all(16),
-        duration: const Duration(seconds: 2),
-      );
+      showSuccessSnackbar('Saved', 'Image saved to Photos');
     } catch (e) {
       _log.error('Save failed', e);
-      Get.snackbar(
-        'Error',
-        'Could not save image to Photos',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade500,
-        colorText: Colors.white,
-        margin: const EdgeInsets.all(16),
-      );
+      showErrorSnackbar('Error', 'Could not save image to Photos');
     }
   }
 

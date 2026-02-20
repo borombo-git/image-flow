@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import '../../common/exceptions/processing_exceptions.dart';
@@ -17,6 +18,7 @@ class ProcessingController extends GetxController {
   final stepDescription = 'Detecting content type'.obs;
   final progress = 0.0.obs;
   final hasError = false.obs;
+  final isComplete = false.obs;
 
   @override
   void onInit() {
@@ -50,7 +52,15 @@ class ProcessingController extends GetxController {
       );
 
       if (isClosed) return;
-      _log.info('Processing complete — navigating to result');
+      _log.info('Processing complete — showing success');
+      progress.value = 1.0;
+      currentStep.value = 'Done!';
+      stepDescription.value = 'Processing complete';
+      isComplete.value = true;
+      HapticFeedback.mediumImpact();
+
+      await Future.delayed(const Duration(milliseconds: 500));
+      if (isClosed) return;
       Get.offNamed(AppRoutes.result, arguments: record);
     } on NoContentDetectedException {
       _log.info('No content detected — showing error dialog');

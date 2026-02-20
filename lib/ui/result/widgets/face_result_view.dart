@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../common/theme/app_theme.dart';
+import '../../../common/widgets/scale_button.dart';
 import '../../../common/utils/format_utils.dart';
 import '../../../model/processing_record.dart';
 import 'before_after_comparison.dart';
@@ -60,7 +61,7 @@ class FaceResultView extends StatelessWidget {
   }
 
   Widget _buildDoneButton() {
-    return SizedBox(
+    return ScaleOnPress(child: SizedBox(
       width: double.infinity,
       height: 52,
       child: ElevatedButton(
@@ -75,6 +76,6 @@ class FaceResultView extends StatelessWidget {
         ),
         child: const Text('Done'),
       ),
-    );
+    ));
   }
 }

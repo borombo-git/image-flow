@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:open_filex/open_filex.dart';
 
 import '../../../common/theme/app_theme.dart';
+import '../../../common/widgets/scale_button.dart';
 import '../../../common/utils/format_utils.dart';
 import '../../../common/utils/path_utils.dart';
 import '../../../model/processing_record.dart';
@@ -189,40 +190,44 @@ class DocumentResultView extends StatelessWidget {
   }
 
   Widget _buildOpenPdfButton(String? pdfPath) {
-    return SizedBox(
-      width: double.infinity,
-      height: 52,
-      child: OutlinedButton.icon(
-        onPressed: pdfPath != null ? () => _openPdf(pdfPath) : null,
-        style: OutlinedButton.styleFrom(
-          foregroundColor: kColorFont,
-          side: BorderSide(color: kColorFontSecondary.withValues(alpha: 0.25)),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+    return ScaleOnPress(
+      child: SizedBox(
+        width: double.infinity,
+        height: 52,
+        child: OutlinedButton.icon(
+          onPressed: pdfPath != null ? () => _openPdf(pdfPath) : null,
+          style: OutlinedButton.styleFrom(
+            foregroundColor: kColorFont,
+            side: BorderSide(color: kColorFontSecondary.withValues(alpha: 0.25)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            textStyle: kFontBodyBold,
           ),
-          textStyle: kFontBodyBold,
+          icon: const Icon(Icons.open_in_new, size: 20),
+          label: const Text('Open PDF'),
         ),
-        icon: const Icon(Icons.open_in_new, size: 20),
-        label: const Text('Open PDF'),
       ),
     );
   }
 
   Widget _buildDoneButton() {
-    return SizedBox(
-      width: double.infinity,
-      height: 52,
-      child: ElevatedButton(
-        onPressed: Get.back,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: kColorPrimary,
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+    return ScaleOnPress(
+      child: SizedBox(
+        width: double.infinity,
+        height: 52,
+        child: ElevatedButton(
+          onPressed: Get.back,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: kColorPrimary,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            textStyle: kFontBodyBold,
           ),
-          textStyle: kFontBodyBold,
+          child: const Text('Done'),
         ),
-        child: const Text('Done'),
       ),
     );
   }

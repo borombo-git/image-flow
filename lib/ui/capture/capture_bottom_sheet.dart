@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../common/theme/app_theme.dart';
 import '../../common/utils/logger.dart';
+import '../../common/utils/snackbar_utils.dart';
 import '../../common/widgets/bottom_sheet_container.dart';
 import '../../routes/app_routes.dart';
 import 'widgets/capture_option_tile.dart';
@@ -65,11 +66,9 @@ class CaptureBottomSheet extends StatelessWidget {
       Get.toNamed(AppRoutes.processing, arguments: file.path);
     } on PlatformException catch (e) {
       _log.error('Error: ${e.message}', e);
-      Get.snackbar(
+      showErrorSnackbar(
         'Error',
         e.message ?? 'Could not access the selected source',
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.all(16),
       );
     }
   }

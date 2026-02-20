@@ -1,8 +1,35 @@
 import 'package:flutter/material.dart';
 import '../../../common/theme/app_theme.dart';
 
-class HomeEmptyState extends StatelessWidget {
+class HomeEmptyState extends StatefulWidget {
   const HomeEmptyState({super.key});
+
+  @override
+  State<HomeEmptyState> createState() => _HomeEmptyStateState();
+}
+
+class _HomeEmptyStateState extends State<HomeEmptyState>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _float;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 3000),
+    )..repeat(reverse: true);
+    _float = Tween(begin: 0.0, end: -8.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +39,14 @@ class HomeEmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildIcon(),
+            AnimatedBuilder(
+              animation: _float,
+              builder: (_, child) => Transform.translate(
+                offset: Offset(0, _float.value),
+                child: child,
+              ),
+              child: _buildIcon(),
+            ),
             const SizedBox(height: 24),
             const Text('No scans yet', style: kFontH2),
             const SizedBox(height: 8),

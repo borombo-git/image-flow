@@ -18,19 +18,27 @@ abstract class AppRoutes {
       name: home,
       page: () => const HomeScreen(),
       binding: HomeBinding(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 250),
     ),
     GetPage(
       name: processing,
       page: () => const ProcessingScreen(),
       binding: ProcessingBinding(),
+      transition: Transition.cupertino,
+      transitionDuration: const Duration(milliseconds: 350),
     ),
     GetPage(
       name: result,
       page: () => const ResultScreen(),
+      transition: Transition.fadeIn,
+      transitionDuration: const Duration(milliseconds: 300),
     ),
     GetPage(
       name: detail,
       page: () => const DetailScreen(),
+      transition: Transition.cupertino,
+      transitionDuration: const Duration(milliseconds: 350),
     ),
   ];
 }

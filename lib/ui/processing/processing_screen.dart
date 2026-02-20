@@ -48,7 +48,25 @@ class ProcessingScreen extends GetView<ProcessingController> {
                               ),
                             ),
                             ScanLineOverlay(
-                              animate: !controller.hasError.value,
+                              animate: !controller.hasError.value &&
+                                  !controller.isComplete.value,
+                            ),
+                            // Success overlay
+                            AnimatedOpacity(
+                              opacity:
+                                  controller.isComplete.value ? 1.0 : 0.0,
+                              duration:
+                                  const Duration(milliseconds: 250),
+                              child: Container(
+                                color: kColorSuccess.withValues(alpha: 0.3),
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.check_circle,
+                                    color: Colors.white,
+                                    size: 64,
+                                  ),
+                                ),
+                              ),
                             ),
                           ],
                         ),

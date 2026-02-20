@@ -13,7 +13,9 @@ class HomeScreen extends GetView<HomeController> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.dark,
+      child: Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
         centerTitle: false,
@@ -27,26 +29,58 @@ class HomeScreen extends GetView<HomeController> {
           ),
         ),
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
+          preferredSize: const Size.fromHeight(2),
           child: Container(
-            height: 1,
-            color: Colors.black.withValues(alpha: 0.05),
+            height: 2,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  kColorPrimary.withValues(alpha: 0.4),
+                  kColorBadgeFace.withValues(alpha: 0.3),
+                  kColorBadgeDoc.withValues(alpha: 0.2),
+                  Colors.transparent,
+                ],
+              ),
+            ),
           ),
         ),
       ),
       body: Obx(() => controller.records.isEmpty
           ? const HomeEmptyState()
           : HistoryGrid(controller: controller)),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          if (Get.isBottomSheetOpen ?? false) return;
-          HapticFeedback.lightImpact();
-          CaptureBottomSheet.show(context);
-        },
-        backgroundColor: kColorPrimary,
-        shape: const CircleBorder(),
-        child: const Icon(Icons.camera_alt, color: Colors.white),
+      floatingActionButton: Container(
+        width: 56,
+        height: 56,
+        decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF3B82F6), kColorPrimary],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Color(0x402563EB),
+              blurRadius: 12,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          shape: const CircleBorder(),
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: () {
+              if (Get.isBottomSheetOpen ?? false) return;
+              HapticFeedback.lightImpact();
+              CaptureBottomSheet.show(context);
+            },
+            child: const Icon(Icons.camera_alt, color: Colors.white),
+          ),
+        ),
       ),
+    ),
     );
   }
 }

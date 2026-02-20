@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../common/theme/app_theme.dart';
+import '../../../common/widgets/scale_button.dart';
 import '../../../common/utils/format_utils.dart';
 import '../../../model/processing_record.dart';
 import 'detail_stat_card.dart';
@@ -140,21 +141,23 @@ class DetailInfoSheet extends StatelessWidget {
   }
 
   Widget _buildSaveButton() {
-    return SizedBox(
-      width: double.infinity,
-      height: 52,
-      child: ElevatedButton.icon(
-        onPressed: onSave,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: kColorFont,
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+    return ScaleOnPress(
+      child: SizedBox(
+        width: double.infinity,
+        height: 52,
+        child: ElevatedButton.icon(
+          onPressed: onSave,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: kColorFont,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            textStyle: kFontBodyBold,
           ),
-          textStyle: kFontBodyBold,
+          icon: const Icon(Icons.download, size: 20),
+          label: const Text('Save to Photos'),
         ),
-        icon: const Icon(Icons.download, size: 20),
-        label: const Text('Save to Photos'),
       ),
     );
   }
