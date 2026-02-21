@@ -249,9 +249,12 @@ class DocumentProcessor {
     stopwatch.stop();
     final resultFile = File('$docsDir/$resultFileName');
     final resultFileSize = await resultFile.length();
+
+    final extractedText = textBlocks.map((b) => b.text).join('\n\n');
     _log.info(
       'Pipeline finished in ${stopwatch.elapsedMilliseconds}ms, '
-      'result size: $resultFileSize bytes, pdf size: $pdfFileSize bytes',
+      'result size: $resultFileSize bytes, pdf size: $pdfFileSize bytes, '
+      'extracted ${extractedText.length} chars',
     );
 
     final record = ProcessingRecord(
@@ -266,6 +269,7 @@ class DocumentProcessor {
         'resultFileSize': resultFileSize,
         'pdfPath': pdfFileName,
         'pdfFileSize': pdfFileSize,
+        'extractedText': extractedText,
       },
     );
     await Get.find<HistoryManager>().addRecord(record);

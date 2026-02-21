@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:open_filex/open_filex.dart';
 
-import '../../../common/utils/path_utils.dart';
 import '../../../model/processing_record.dart';
 import '../../../routes/app_routes.dart';
 import '../home_controller.dart';
@@ -29,15 +27,6 @@ class _HistoryGridState extends State<HistoryGrid> {
   Future<void> _onTap(ProcessingRecord record) async {
     if (_navigating) return;
     _navigating = true;
-
-    if (record.type == ProcessingType.document) {
-      final pdfPath = (record.metadata ?? {})['pdfPath'] as String?;
-      if (pdfPath != null) {
-        await OpenFilex.open(resolveDocPath(pdfPath));
-        _navigating = false;
-        return;
-      }
-    }
     await Get.toNamed(AppRoutes.detail, arguments: record);
     _navigating = false;
   }

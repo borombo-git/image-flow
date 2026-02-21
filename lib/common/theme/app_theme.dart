@@ -83,9 +83,7 @@ const kFontCaption = TextStyle(
 final theme = ThemeData(
   brightness: Brightness.light,
   fontFamily: kSatoshi,
-  cupertinoOverrideTheme: const CupertinoThemeData(
-    primaryColor: kColorPrimary,
-  ),
+  cupertinoOverrideTheme: const CupertinoThemeData(primaryColor: kColorPrimary),
   textSelectionTheme: const TextSelectionThemeData(
     cursorColor: kColorPrimary,
     selectionColor: kColorPrimary,
@@ -110,8 +108,6 @@ final theme = ThemeData(
     elevation: 0,
   ),
   textButtonTheme: TextButtonThemeData(
-    style: ButtonStyle(
-      foregroundColor: WidgetStateProperty.all(kColorPrimary),
-    ),
+    style: ButtonStyle(foregroundColor: WidgetStateProperty.all(kColorPrimary)),
   ),
 );
