@@ -12,14 +12,22 @@ import 'widgets/capture_option_tile.dart';
 
 const _log = AppLogger('📷', 'CAPTURE');
 
-class CaptureBottomSheet extends StatelessWidget {
-  const CaptureBottomSheet({super.key});
+/// Optional callback type for "Add Page" mode — receives the picked file path
+/// instead of navigating to the processing screen.
+typedef ImagePickedCallback = void Function(String imagePath);
 
-  static void show(BuildContext context) {
+class CaptureBottomSheet extends StatelessWidget {
+  const CaptureBottomSheet({super.key, this.onImagePicked});
+
+  /// When set, the picked image path is passed to this callback instead of
+  /// navigating to `/processing`.
+  final ImagePickedCallback? onImagePicked;
+
+  static void show(BuildContext context, {ImagePickedCallback? onImagePicked}) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (_) => const CaptureBottomSheet(),
+      builder: (_) => CaptureBottomSheet(onImagePicked: onImagePicked),
     );
   }
 
@@ -63,7 +71,11 @@ class CaptureBottomSheet extends StatelessWidget {
         return;
       }
       _log.info('Image selected: ${file.path}');
-      Get.toNamed(AppRoutes.processing, arguments: file.path);
+      if (onImagePicked != null) {
+        onImagePicked!(file.path);
+      } else {
+        Get.toNamed(AppRoutes.processing, arguments: file.path);
+      }
     } on PlatformException catch (e) {
       _log.error('Error: ${e.message}', e);
       showErrorSnackbar(

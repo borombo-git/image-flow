@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../common/theme/app_theme.dart';
+import '../../../../common/theme/app_theme.dart';
 
 /// Search input with match counter and prev/next navigation.
 class TextSearchBar extends StatelessWidget {
@@ -59,9 +59,7 @@ class TextSearchBar extends StatelessWidget {
           if (query.isNotEmpty) ...[
             const SizedBox(width: 8),
             Text(
-              matchCount == 0
-                  ? '0/0'
-                  : '${currentMatchIndex + 1}/$matchCount',
+              matchCount == 0 ? '0/0' : '${currentMatchIndex + 1}/$matchCount',
               style: kFontCaption.copyWith(fontSize: 11),
             ),
             const SizedBox(width: 4),

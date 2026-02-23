@@ -5,6 +5,7 @@ import '../ui/home/home_binding.dart';
 import '../ui/home/home_screen.dart';
 import '../ui/processing/processing_binding.dart';
 import '../ui/processing/processing_screen.dart';
+import '../ui/result/result_binding.dart';
 import '../ui/result/result_screen.dart';
 
 abstract class AppRoutes {
@@ -31,6 +32,7 @@ abstract class AppRoutes {
     GetPage(
       name: result,
       page: () => const ResultScreen(),
+      binding: ResultBinding(),
       transition: Transition.fadeIn,
       transitionDuration: const Duration(milliseconds: 300),
     ),

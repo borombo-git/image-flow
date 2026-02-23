@@ -57,9 +57,7 @@ class FaceProcessor {
   /// Runs ML Kit [FaceDetector] and returns bounding boxes as `[x, y, w, h]`.
   Future<List<List<int>>> detect(String imagePath) async {
     final detector = FaceDetector(
-      options: FaceDetectorOptions(
-        performanceMode: FaceDetectorMode.accurate,
-      ),
+      options: FaceDetectorOptions(performanceMode: FaceDetectorMode.accurate),
     );
 
     try {
@@ -89,17 +87,30 @@ class FaceProcessor {
     ProgressCallback? onProgress,
   }) async {
     // Heavy image work in a separate isolate
-    onProgress?.call(0.5, 'Applying Filter', 'Converting faces to black & white');
+    onProgress?.call(
+      0.5,
+      'Applying Filter',
+      'Converting faces to black & white',
+    );
     _log.info('Starting isolate for face manipulation');
 
     final payload = _IsolatePayload(bytes, faceRects);
     final resultBytes = await Isolate.run(() => _processInIsolate(payload));
 
     // Save result + copy original
-    onProgress?.call(0.85, 'Saving Result', 'Writing composite image to storage');
-    final resultFileName = await saveResult(resultBytes, prefix: 'face_result_');
+    onProgress?.call(
+      0.85,
+      'Saving Result',
+      'Writing composite image to storage',
+    );
+    final resultFileName = await saveResult(
+      resultBytes,
+      prefix: 'face_result_',
+    );
     final originalFileName = await copyToDocuments(imagePath);
-    _log.info('Result saved: $resultFileName, original copied: $originalFileName');
+    _log.info(
+      'Result saved: $resultFileName, original copied: $originalFileName',
+    );
 
     // Create history record
     stopwatch.stop();

@@ -18,5 +18,4 @@ class HomeController extends GetxController {
     await _history.deleteRecord(id);
     deletingId.value = null;
   }
-
 }

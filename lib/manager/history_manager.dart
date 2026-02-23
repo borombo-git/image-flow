@@ -51,13 +51,32 @@ class HistoryManager extends GetxController {
   }
 
   Future<void> _deleteFiles(ProcessingRecord record) async {
-    final paths = [
+    final metadata = record.metadata;
+
+    // Collect all file paths to delete, using a Set to deduplicate
+    // (record.resultPath / originalPath overlap with first page paths)
+    final pathSet = <String>{
       resolveDocPath(record.originalPath),
       resolveDocPath(record.resultPath),
-      if (record.metadata?['pdfPath'] != null)
-        resolveDocPath(record.metadata!['pdfPath'] as String),
-    ];
-    for (final path in paths) {
+      if (metadata?['pdfPath'] != null)
+        resolveDocPath(metadata!['pdfPath'] as String),
+    };
+
+    // Multi-page records store per-page file lists
+    final pageResultPaths = metadata?['pageResultPaths'] as List<dynamic>?;
+    final pageOriginalPaths = metadata?['pageOriginalPaths'] as List<dynamic>?;
+    if (pageResultPaths != null) {
+      for (final p in pageResultPaths) {
+        pathSet.add(resolveDocPath(p as String));
+      }
+    }
+    if (pageOriginalPaths != null) {
+      for (final p in pageOriginalPaths) {
+        pathSet.add(resolveDocPath(p as String));
+      }
+    }
+
+    for (final path in pathSet) {
       try {
         final file = File(path);
         if (await file.exists()) await file.delete();

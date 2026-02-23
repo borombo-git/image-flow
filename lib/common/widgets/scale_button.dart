@@ -3,11 +3,7 @@ import 'package:flutter/material.dart';
 /// Wraps any tappable child with a subtle scale-down effect on press.
 /// Does not handle taps itself — the child must have its own onPressed/onTap.
 class ScaleOnPress extends StatefulWidget {
-  const ScaleOnPress({
-    super.key,
-    required this.child,
-    this.scaleDown = 0.97,
-  });
+  const ScaleOnPress({super.key, required this.child, this.scaleDown = 0.97});
 
   final Widget child;
   final double scaleDown;

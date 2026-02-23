@@ -24,9 +24,10 @@ class _SmoothProgressBarState extends State<SmoothProgressBar>
       vsync: this,
       duration: const Duration(milliseconds: 350),
     );
-    _animation = Tween(begin: 0.0, end: widget.value).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _animation = Tween(
+      begin: 0.0,
+      end: widget.value,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
     if (widget.value > 0) _controller.forward();
   }
 
@@ -37,9 +38,7 @@ class _SmoothProgressBarState extends State<SmoothProgressBar>
       _animation = Tween(
         begin: _animation.value,
         end: widget.value,
-      ).animate(
-        CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-      );
+      ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
       _controller
         ..reset()
         ..forward();

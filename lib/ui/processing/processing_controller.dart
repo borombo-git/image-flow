@@ -41,7 +41,7 @@ class ProcessingController extends GetxController {
     }
 
     try {
-      final record = await _processingManager.processImage(
+      final result = await _processingManager.processImageForResult(
         imagePath.value,
         onProgress: (p, step, description) {
           _log.info('Progress: ${(p * 100).toInt()}% — $step');
@@ -61,7 +61,7 @@ class ProcessingController extends GetxController {
 
       await Future.delayed(const Duration(milliseconds: 500));
       if (isClosed) return;
-      Get.offNamed(AppRoutes.result, arguments: record);
+      Get.offNamed(AppRoutes.result, arguments: result);
     } on NoContentDetectedException {
       _log.info('No content detected — showing error dialog');
       _showErrorDialog(

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../../../common/theme/app_theme.dart';
-import '../../../common/widgets/scale_button.dart';
-import '../../../common/utils/format_utils.dart';
-import '../../../model/processing_record.dart';
+import '../../../../common/theme/app_theme.dart';
+import '../../../../common/widgets/scale_button.dart';
+import '../../../../common/utils/format_utils.dart';
+import '../../../../model/processing_record.dart';
 import 'before_after_comparison.dart';
 import 'stats_row.dart';
 
@@ -45,8 +45,14 @@ class FaceResultView extends StatelessWidget {
               const SizedBox(height: 24),
               StatsRow(
                 stats: [
-                  (label: 'Processing Time', value: formatDuration(processingTimeMs)),
-                  (label: 'Features', value: '$faceCount Face${faceCount == 1 ? '' : 's'}'),
+                  (
+                    label: 'Processing Time',
+                    value: formatDuration(processingTimeMs),
+                  ),
+                  (
+                    label: 'Features',
+                    value: '$faceCount Face${faceCount == 1 ? '' : 's'}',
+                  ),
                   (label: 'File Size', value: formatFileSize(resultFileSize)),
                 ],
               ),
@@ -61,21 +67,23 @@ class FaceResultView extends StatelessWidget {
   }
 
   Widget _buildDoneButton() {
-    return ScaleOnPress(child: SizedBox(
-      width: double.infinity,
-      height: 52,
-      child: ElevatedButton(
-        onPressed: Get.back,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: kColorPrimary,
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+    return ScaleOnPress(
+      child: SizedBox(
+        width: double.infinity,
+        height: 52,
+        child: ElevatedButton(
+          onPressed: Get.back,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: kColorPrimary,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            textStyle: kFontBodyBold,
           ),
-          textStyle: kFontBodyBold,
+          child: const Text('Done'),
         ),
-        child: const Text('Done'),
       ),
-    ));
+    );
   }
 }

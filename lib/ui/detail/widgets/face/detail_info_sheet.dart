@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../../common/theme/app_theme.dart';
-import '../../../common/widgets/scale_button.dart';
-import '../../../common/utils/format_utils.dart';
-import '../../../model/processing_record.dart';
-import 'detail_stat_card.dart';
+import '../../../../common/theme/app_theme.dart';
+import '../../../../common/widgets/scale_button.dart';
+import '../../../../common/utils/format_utils.dart';
+import '../../../../model/processing_record.dart';
+import '../detail_stat_card.dart';
 
 /// Bottom persistent white sheet with record info, stats, and save button.
 class DetailInfoSheet extends StatelessWidget {
@@ -41,10 +41,7 @@ class DetailInfoSheet extends StatelessWidget {
             const SizedBox(height: 16),
             _buildTitleRow(),
             const SizedBox(height: 4),
-            Text(
-              formatDateLong(record.createdAt),
-              style: kFontCaption,
-            ),
+            Text(formatDateLong(record.createdAt), style: kFontCaption),
             const SizedBox(height: 16),
             _buildStats(
               isFace: isFace,

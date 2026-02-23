@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../common/theme/app_theme.dart';
+import '../../../../common/theme/app_theme.dart';
 
 const _kActiveHighlight = Color(0xFFFFD54F);
 const _kPassiveHighlight = Color(0xFFFFF9C4);
@@ -59,13 +59,15 @@ class HighlightedTextBody extends StatelessWidget {
       }
 
       final isActive = i == currentMatchIndex;
-      spans.add(TextSpan(
-        text: text.substring(matchStart, matchEnd),
-        style: TextStyle(
-          backgroundColor: isActive ? _kActiveHighlight : _kPassiveHighlight,
-          fontWeight: isActive ? FontWeight.w700 : null,
+      spans.add(
+        TextSpan(
+          text: text.substring(matchStart, matchEnd),
+          style: TextStyle(
+            backgroundColor: isActive ? _kActiveHighlight : _kPassiveHighlight,
+            fontWeight: isActive ? FontWeight.w700 : null,
+          ),
         ),
-      ));
+      );
 
       prev = matchEnd;
     }

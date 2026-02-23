@@ -6,13 +6,13 @@ import 'package:gal/gal.dart';
 import 'package:get/get.dart';
 import 'package:share_plus/share_plus.dart';
 
-import '../../../common/theme/app_theme.dart';
-import '../../../common/utils/logger.dart';
-import '../../../common/utils/path_utils.dart';
-import '../../../common/utils/snackbar_utils.dart';
-import '../../../model/processing_record.dart';
-import '../../home/home_controller.dart';
-import '../../home/widgets/delete_record_sheet.dart';
+import '../../../../common/theme/app_theme.dart';
+import '../../../../common/utils/logger.dart';
+import '../../../../common/utils/path_utils.dart';
+import '../../../../common/utils/snackbar_utils.dart';
+import '../../../../model/processing_record.dart';
+import '../../../home/home_controller.dart';
+import '../../../home/widgets/delete_record_sheet.dart';
 import 'detail_action_bar.dart';
 import 'detail_info_sheet.dart';
 
@@ -108,10 +108,9 @@ class FaceDetailView extends StatelessWidget {
     final shareFile = File(resolveDocPath(record.resultPath));
     _log.info('Sharing image');
 
-    await Share.shareXFiles(
-      [XFile(shareFile.path)],
-      sharePositionOrigin: shareOrigin,
-    );
+    await Share.shareXFiles([
+      XFile(shareFile.path),
+    ], sharePositionOrigin: shareOrigin);
   }
 
   void _delete(BuildContext context) {

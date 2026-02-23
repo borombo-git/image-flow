@@ -20,9 +20,10 @@ class _HomeEmptyStateState extends State<HomeEmptyState>
       vsync: this,
       duration: const Duration(milliseconds: 3000),
     )..repeat(reverse: true);
-    _float = Tween(begin: 0.0, end: -8.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _float = Tween(
+      begin: 0.0,
+      end: -8.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override

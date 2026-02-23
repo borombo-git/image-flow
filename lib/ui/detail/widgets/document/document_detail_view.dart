@@ -5,15 +5,15 @@ import 'package:intl/intl.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:share_plus/share_plus.dart';
 
-import '../../../common/theme/app_theme.dart';
-import '../../../common/utils/format_utils.dart';
-import '../../../common/utils/logger.dart';
-import '../../../common/utils/path_utils.dart';
-import '../../../common/widgets/scale_button.dart';
-import '../../../model/processing_record.dart';
-import '../../home/home_controller.dart';
-import '../../home/widgets/delete_record_sheet.dart';
-import 'detail_stat_card.dart';
+import '../../../../common/theme/app_theme.dart';
+import '../../../../common/utils/format_utils.dart';
+import '../../../../common/utils/logger.dart';
+import '../../../../common/utils/path_utils.dart';
+import '../../../../common/widgets/scale_button.dart';
+import '../../../../model/processing_record.dart';
+import '../../../home/home_controller.dart';
+import '../../../home/widgets/delete_record_sheet.dart';
+import '../detail_stat_card.dart';
 import 'extracted_text_card.dart';
 
 const _log = AppLogger('🔍', 'DETAIL');
@@ -132,7 +132,10 @@ class DocumentDetailView extends StatelessWidget {
             child: GestureDetector(
               onTap: pdfPath != null ? () => _openPdf(pdfPath) : null,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: kColorPrimary,
                   borderRadius: BorderRadius.circular(10),
@@ -155,6 +158,9 @@ class DocumentDetailView extends StatelessWidget {
   }
 
   Widget _buildStats(int pdfFileSize, int textBlockCount) {
+    final pageCount = record.metadata?['pageCount'] as int?;
+    final showPageCount = pageCount != null && pageCount > 1;
+
     return Row(
       children: [
         DetailStatCard(
@@ -163,16 +169,25 @@ class DocumentDetailView extends StatelessWidget {
           value: formatFileSize(pdfFileSize),
         ),
         const SizedBox(width: 10),
-        DetailStatCard(
-          icon: Icons.article_outlined,
-          label: 'BLOCKS',
-          value: '$textBlockCount',
-        ),
+        if (showPageCount)
+          DetailStatCard(
+            icon: Icons.pages_outlined,
+            label: 'PAGES',
+            value: '$pageCount',
+          )
+        else
+          DetailStatCard(
+            icon: Icons.article_outlined,
+            label: 'BLOCKS',
+            value: '$textBlockCount',
+          ),
         const SizedBox(width: 10),
         DetailStatCard(
-          icon: Icons.calendar_today_outlined,
-          label: 'DATE',
-          value: formatDate(record.createdAt),
+          icon: Icons.timer_outlined,
+          label: 'TIME',
+          value: formatDuration(
+            record.metadata?['processingTimeMs'] as int? ?? 0,
+          ),
         ),
       ],
     );
@@ -190,10 +205,9 @@ class DocumentDetailView extends StatelessWidget {
         ? box.localToGlobal(Offset.zero) & box.size
         : Rect.zero;
 
-    await Share.shareXFiles(
-      [XFile(resolveDocPath(pdfPath))],
-      sharePositionOrigin: origin,
-    );
+    await Share.shareXFiles([
+      XFile(resolveDocPath(pdfPath)),
+    ], sharePositionOrigin: origin);
   }
 
   void _delete(BuildContext context) {

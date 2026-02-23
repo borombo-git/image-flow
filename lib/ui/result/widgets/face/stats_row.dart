@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../common/theme/app_theme.dart';
+import '../../../../common/theme/app_theme.dart';
 
 /// A stat entry to display in the [StatsRow].
 typedef StatEntry = ({String label, String value});
@@ -20,11 +20,7 @@ class StatsRow extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: kColorFontSecondary.withValues(alpha: 0.2)),
       ),
-      child: IntrinsicHeight(
-        child: Row(
-          children: _buildChildren(),
-        ),
-      ),
+      child: IntrinsicHeight(child: Row(children: _buildChildren())),
     );
   }
 

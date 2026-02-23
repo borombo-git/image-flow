@@ -45,10 +45,7 @@ class HistoryCard extends StatelessWidget {
           highlightColor: kColorPrimary.withValues(alpha: 0.04),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildImage(),
-              _buildDate(),
-            ],
+            children: [_buildImage(), _buildDate()],
           ),
         ),
       ),
@@ -87,11 +84,7 @@ class HistoryCard extends StatelessWidget {
             ),
           ),
           // Type badge
-          Positioned(
-            top: 8,
-            right: 8,
-            child: _buildBadge(),
-          ),
+          Positioned(top: 8, right: 8, child: _buildBadge()),
         ],
       ),
     );

@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
-import '../../../common/theme/app_theme.dart';
-import '../../../common/utils/path_utils.dart';
+import '../../../../common/theme/app_theme.dart';
+import '../../../../common/utils/path_utils.dart';
 
 /// Side-by-side before/after image comparison with labels.
 class BeforeAfterComparison extends StatelessWidget {
@@ -44,9 +44,13 @@ class BeforeAfterComparison extends StatelessWidget {
 
     return Row(
       children: [
-        Expanded(child: Center(child: Text('BEFORE', style: style))),
+        Expanded(
+          child: Center(child: Text('BEFORE', style: style)),
+        ),
         const SizedBox(width: 12),
-        Expanded(child: Center(child: Text('AFTER', style: style))),
+        Expanded(
+          child: Center(child: Text('AFTER', style: style)),
+        ),
       ],
     );
   }
@@ -116,7 +120,10 @@ class BeforeAfterComparison extends StatelessWidget {
               right: 8,
               bottom: 8,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.black.withValues(alpha: 0.6),
                   borderRadius: BorderRadius.circular(12),

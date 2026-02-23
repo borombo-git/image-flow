@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../common/theme/app_theme.dart';
-import '../../../common/utils/snackbar_utils.dart';
+import '../../../../common/theme/app_theme.dart';
+import '../../../../common/utils/snackbar_utils.dart';
 import 'highlighted_text_body.dart';
 import 'text_search_bar.dart';
 
@@ -47,7 +47,9 @@ class _ExtractedTextCardState extends State<ExtractedTextCard> {
             duration: const Duration(milliseconds: 250),
             curve: Curves.easeInOut,
             alignment: Alignment.topCenter,
-            child: _expanded ? _buildExpandedContent() : const SizedBox.shrink(),
+            child: _expanded
+                ? _buildExpandedContent()
+                : const SizedBox.shrink(),
           ),
         ],
       ),
@@ -62,14 +64,20 @@ class _ExtractedTextCardState extends State<ExtractedTextCard> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
           children: [
-            const Icon(Icons.text_snippet_outlined, size: 20, color: kColorPrimary),
-            const SizedBox(width: 10),
-            const Expanded(
-              child: Text('Extracted Text', style: kFontBodyBold),
+            const Icon(
+              Icons.text_snippet_outlined,
+              size: 20,
+              color: kColorPrimary,
             ),
+            const SizedBox(width: 10),
+            const Expanded(child: Text('Extracted Text', style: kFontBodyBold)),
             GestureDetector(
               onTap: _copyText,
-              child: const Icon(Icons.copy_outlined, size: 18, color: kColorFontSecondary),
+              child: const Icon(
+                Icons.copy_outlined,
+                size: 18,
+                color: kColorFontSecondary,
+              ),
             ),
             const SizedBox(width: 12),
             AnimatedRotation(
@@ -153,7 +161,8 @@ class _ExtractedTextCardState extends State<ExtractedTextCard> {
     if (_matchPositions.isEmpty) return;
     setState(() {
       _currentMatchIndex =
-          (_currentMatchIndex - 1 + _matchPositions.length) % _matchPositions.length;
+          (_currentMatchIndex - 1 + _matchPositions.length) %
+          _matchPositions.length;
     });
     _scrollToMatch();
   }

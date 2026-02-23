@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../model/processing_record.dart';
-import 'widgets/document_detail_view.dart';
-import 'widgets/face_detail_view.dart';
+import 'widgets/document/document_detail_view.dart';
+import 'widgets/face/face_detail_view.dart';
 
 /// Routes to the appropriate detail view based on processing type.
 class DetailScreen extends StatelessWidget {

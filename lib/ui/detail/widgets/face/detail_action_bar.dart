@@ -42,7 +42,11 @@ class DetailActionBar extends StatelessWidget {
             color: Colors.black.withValues(alpha: 0.4),
             shape: BoxShape.circle,
           ),
-          child: const Icon(Icons.share_outlined, color: Colors.white, size: 20),
+          child: const Icon(
+            Icons.share_outlined,
+            color: Colors.white,
+            size: 20,
+          ),
         ),
       ),
     );
