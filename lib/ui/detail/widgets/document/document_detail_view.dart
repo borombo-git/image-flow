@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -16,8 +15,7 @@ import '../../../home/widgets/delete_record_sheet.dart';
 import '../detail_stat_card.dart';
 import 'extracted_text_card.dart';
 
-const _log = AppLogger('🔍', 'DETAIL');
-final _scanDateFormat = DateFormat('yyyyMMdd');
+const _log = AppLogger('🔍', 'DOC_DETAIL');
 
 /// Detail view for document processing records.
 class DocumentDetailView extends StatelessWidget {
@@ -32,7 +30,7 @@ class DocumentDetailView extends StatelessWidget {
     final pdfFileSize = metadata['pdfFileSize'] as int? ?? 0;
     final textBlockCount = metadata['textBlockCount'] as int? ?? 0;
     final extractedText = metadata['extractedText'] as String?;
-    final scanName = 'Scan_${_scanDateFormat.format(record.createdAt)}.pdf';
+    final scanName = 'Scan_${formatDateCompact(record.createdAt)}.pdf';
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark,

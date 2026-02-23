@@ -130,7 +130,7 @@ class _ExtractedTextCardState extends State<ExtractedTextCard> {
     setState(() {
       _query = value.toLowerCase();
       _matchPositions = _findMatches();
-      _currentMatchIndex = _matchPositions.isNotEmpty ? 0 : 0;
+      _currentMatchIndex = 0;
     });
     _scrollToMatch();
   }

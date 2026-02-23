@@ -61,6 +61,9 @@ class ImageProcessingManager extends GetxController {
   final _faceProcessor = FaceProcessor();
   final _documentProcessor = DocumentProcessor();
 
+  /// Exposes the document processor for PDF generation (used by collector).
+  DocumentProcessor get documentProcessor => _documentProcessor;
+
   /// Reads image bytes, normalizes EXIF orientation in an isolate, and writes
   /// a temp file for ML Kit. Shared setup for all processing methods.
   Future<_PreparedImage> _prepareImage(

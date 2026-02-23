@@ -3,14 +3,13 @@ import 'package:get/get.dart';
 
 import '../../model/document_page.dart';
 import '../../model/processing_record.dart';
-import 'document_collector_controller.dart';
 import 'widgets/document/document_result_view.dart';
 import 'widgets/face/face_result_view.dart';
 
 /// Routes to the appropriate result view based on argument type.
 ///
 /// - [ProcessingRecord] with face type → [FaceResultView]
-/// - [DocumentPage] → initializes collector + [DocumentResultView]
+/// - [DocumentPage] → [DocumentResultView] (collector initialized via onInit)
 class ResultScreen extends StatelessWidget {
   const ResultScreen({super.key});
 
@@ -25,8 +24,6 @@ class ResultScreen extends StatelessWidget {
 
     // Document result — enter multi-page collection flow
     if (args is DocumentPage) {
-      final collector = Get.find<DocumentCollectorController>();
-      collector.initWithFirstPage(args);
       return const DocumentResultView();
     }
 

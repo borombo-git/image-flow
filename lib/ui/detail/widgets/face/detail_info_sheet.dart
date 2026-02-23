@@ -6,7 +6,7 @@ import '../../../../common/utils/format_utils.dart';
 import '../../../../model/processing_record.dart';
 import '../detail_stat_card.dart';
 
-/// Bottom persistent white sheet with record info, stats, and save button.
+/// Bottom persistent white sheet with face record info, stats, and save button.
 class DetailInfoSheet extends StatelessWidget {
   const DetailInfoSheet({
     super.key,
@@ -20,9 +20,9 @@ class DetailInfoSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final metadata = record.metadata ?? {};
-    final isFace = record.type == ProcessingType.face;
     final processingTimeMs = metadata['processingTimeMs'] as int? ?? 0;
     final resultFileSize = metadata['resultFileSize'] as int? ?? 0;
+    final faceCount = metadata['faceCount'] as int? ?? 0;
 
     return Container(
       width: double.infinity,
@@ -44,9 +44,8 @@ class DetailInfoSheet extends StatelessWidget {
             Text(formatDateLong(record.createdAt), style: kFontCaption),
             const SizedBox(height: 16),
             _buildStats(
-              isFace: isFace,
               fileSize: resultFileSize,
-              metadata: metadata,
+              faceCount: faceCount,
               processingTimeMs: processingTimeMs,
             ),
             const SizedBox(height: 20),
@@ -72,28 +71,23 @@ class DetailInfoSheet extends StatelessWidget {
   }
 
   Widget _buildTitleRow() {
-    final isFace = record.type == ProcessingType.face;
-    final title = isFace ? 'Portrait Scan' : 'Document Scan';
-    final badgeLabel = isFace ? 'FACE' : 'DOC';
-    final badgeColor = isFace ? kColorBadgeFace : kColorBadgeDoc;
-
     return Row(
       children: [
-        Text(title, style: kFontH2),
+        const Text('Portrait Scan', style: kFontH2),
         const SizedBox(width: 10),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
           decoration: BoxDecoration(
-            border: Border.all(color: badgeColor),
+            border: Border.all(color: kColorBadgeFace),
             borderRadius: BorderRadius.circular(20),
           ),
-          child: Text(
-            badgeLabel,
+          child: const Text(
+            'FACE',
             style: TextStyle(
               fontFamily: kSatoshi,
               fontSize: 11,
               fontWeight: FontWeight.w700,
-              color: badgeColor,
+              color: kColorBadgeFace,
               letterSpacing: 0.5,
             ),
           ),
@@ -103,17 +97,10 @@ class DetailInfoSheet extends StatelessWidget {
   }
 
   Widget _buildStats({
-    required bool isFace,
     required int fileSize,
-    required Map<String, dynamic> metadata,
+    required int faceCount,
     required int processingTimeMs,
   }) {
-    final middleIcon = isFace ? Icons.face_outlined : Icons.article_outlined;
-    final middleLabel = isFace ? 'FACES' : 'BLOCKS';
-    final middleValue = isFace
-        ? '${metadata['faceCount'] as int? ?? 0}'
-        : '${metadata['textBlockCount'] as int? ?? 0}';
-
     return Row(
       children: [
         DetailStatCard(
@@ -123,9 +110,9 @@ class DetailInfoSheet extends StatelessWidget {
         ),
         const SizedBox(width: 10),
         DetailStatCard(
-          icon: middleIcon,
-          label: middleLabel,
-          value: middleValue,
+          icon: Icons.face_outlined,
+          label: 'FACES',
+          value: '$faceCount',
         ),
         const SizedBox(width: 10),
         DetailStatCard(

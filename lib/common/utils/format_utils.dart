@@ -2,12 +2,16 @@ import 'package:intl/intl.dart';
 
 final _dateFormat = DateFormat('MMM d, h:mm a');
 final _dateLongFormat = DateFormat("MMM d, yyyy 'at' h:mm a");
+final _dateCompactFormat = DateFormat('yyyyMMdd');
 
 /// Formats a [DateTime] as "Oct 24, 10:30 AM".
 String formatDate(DateTime date) => _dateFormat.format(date);
 
 /// Formats a [DateTime] as "Oct 24, 2024 at 10:30 AM".
 String formatDateLong(DateTime date) => _dateLongFormat.format(date);
+
+/// Formats a [DateTime] as "20241024" — used for scan filenames.
+String formatDateCompact(DateTime date) => _dateCompactFormat.format(date);
 
 /// Formats milliseconds as "350ms" or "1.2s".
 String formatDuration(int ms) {

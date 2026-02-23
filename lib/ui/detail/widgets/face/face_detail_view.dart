@@ -16,7 +16,7 @@ import '../../../home/widgets/delete_record_sheet.dart';
 import 'detail_action_bar.dart';
 import 'detail_info_sheet.dart';
 
-const _log = AppLogger('🔍', 'DETAIL');
+const _log = AppLogger('🔍', 'FACE_DETAIL');
 
 /// Full-screen detail view for face processing records.
 class FaceDetailView extends StatelessWidget {
@@ -105,11 +105,9 @@ class FaceDetailView extends StatelessWidget {
   }
 
   Future<void> _share(Rect shareOrigin) async {
-    final shareFile = File(resolveDocPath(record.resultPath));
     _log.info('Sharing image');
-
     await Share.shareXFiles([
-      XFile(shareFile.path),
+      XFile(resolveDocPath(record.resultPath)),
     ], sharePositionOrigin: shareOrigin);
   }
 

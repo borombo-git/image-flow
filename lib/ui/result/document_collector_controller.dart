@@ -8,7 +8,6 @@ import '../../common/exceptions/processing_exceptions.dart';
 import '../../common/utils/logger.dart';
 import '../../common/utils/path_utils.dart';
 import '../../common/utils/snackbar_utils.dart';
-import '../../manager/document_processor.dart';
 import '../../manager/history_manager.dart';
 import '../../manager/image_processing_manager.dart';
 import '../../model/document_page.dart';
@@ -25,21 +24,33 @@ const _log = AppLogger('📑', 'COLLECTOR');
 /// Handles page add/remove/reorder and final PDF generation + Hive save.
 class DocumentCollectorController extends GetxController {
   final _processingManager = Get.find<ImageProcessingManager>();
-  final _documentProcessor = DocumentProcessor();
+  final _documentProcessor = Get.find<ImageProcessingManager>().documentProcessor;
 
   final pages = <DocumentPage>[].obs;
   final selectedIndex = 0.obs;
   final isProcessing = false.obs;
   final processingStep = ''.obs;
 
-  bool _initialized = false;
+  bool _saved = false;
 
-  /// Idempotent — safe to call from build(). Guards against Flutter rebuild.
-  void initWithFirstPage(DocumentPage page) {
-    if (_initialized) return;
-    _initialized = true;
-    pages.add(page);
-    _log.info('Initialized with first page: ${page.enhancedImagePath}');
+  @override
+  void onInit() {
+    super.onInit();
+    final args = Get.arguments;
+    if (args is DocumentPage) {
+      pages.add(args);
+      _log.info('Initialized with first page: ${args.enhancedImagePath}');
+    }
+  }
+
+  @override
+  void onClose() {
+    // Clean up temp files if the user didn't save
+    if (!_saved && pages.isNotEmpty) {
+      _log.info('Controller disposed without saving — cleaning up temp files');
+      discardAll();
+    }
+    super.onClose();
   }
 
   void selectPage(int index) {
@@ -98,6 +109,7 @@ class DocumentCollectorController extends GetxController {
   }
 
   Future<void> _processNewPage(String imagePath) async {
+    if (isProcessing.value) return;
     _log.info('Processing additional page: $imagePath');
     isProcessing.value = true;
     processingStep.value = 'Loading Image';
@@ -128,6 +140,7 @@ class DocumentCollectorController extends GetxController {
 
   /// Generates the multi-page PDF, saves the record to Hive, and navigates home.
   Future<void> saveDocument() async {
+    if (isProcessing.value) return;
     _log.info('Saving document with ${pages.length} page(s)');
     isProcessing.value = true;
     processingStep.value = 'Creating PDF';
@@ -182,6 +195,7 @@ class DocumentCollectorController extends GetxController {
       );
 
       await Get.find<HistoryManager>().addRecord(record);
+      _saved = true;
       HapticFeedback.mediumImpact();
       _log.info('Document saved — record ${record.id}');
 
@@ -209,10 +223,10 @@ class DocumentCollectorController extends GetxController {
     _tryDelete(page.originalImagePath);
   }
 
-  void _tryDelete(String fileName) {
+  Future<void> _tryDelete(String fileName) async {
     try {
       final file = File(resolveDocPath(fileName));
-      if (file.existsSync()) file.deleteSync();
+      if (await file.exists()) await file.delete();
     } catch (e) {
       _log.error('Failed to delete temp file: $fileName', e);
     }
