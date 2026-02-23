@@ -46,7 +46,7 @@ flutter test        # Run tests
 | `google_mlkit_text_recognition` | Document/text detection |
 | `image` | Pixel-level image manipulation (crop, B&W, composite, luminance scanning) |
 | `hive` / `hive_flutter` | Local storage for processing history |
-| `pdf` / `printing` | PDF generation from processed documents |
+| `pdf` | PDF generation from processed documents |
 | `open_filex` | Open PDF in system default viewer (iOS/Android) |
 | `image_picker` | Camera/gallery image selection |
 | `share_plus` | Share files (images, PDFs) |
@@ -59,7 +59,7 @@ flutter test        # Run tests
 **MVVM with GetX**, feature-based folder structure. Two controller layers:
 
 - **Managers** (`GetxController` + `permanent: true`) — global singletons for shared business logic (`ImageProcessingManager`, `HistoryManager`)
-- **Processors** — plain classes with no reactive state, handling pipeline-specific logic (`FaceProcessor`, `DocumentProcessor`)
+- **Processors** (`GetxController`) — pipeline-specific logic (`FaceProcessor`, `DocumentProcessor`)
 - **Screen controllers** (`GetxController`) — per-screen logic, only when the screen has local state. Skipped for simple screens that just read from a manager.
 
 ```
@@ -68,14 +68,16 @@ lib/
 │   ├── image_processing_manager.dart  # Orchestrator: auto-detection + EXIF normalization
 │   ├── face_processor.dart            # Face detection + grayscale pipeline
 │   ├── document_processor.dart        # Text detection + edge detection + PDF
+│   ├── document_edge_detection.dart   # Isolate: luminance-based edge detection
 │   └── history_manager.dart           # Hive CRUD
 ├── ui/
 │   ├── home/         # History grid + FAB
 │   ├── capture/      # Camera/gallery picker (bottom sheet)
 │   ├── processing/   # Progress screen with step descriptions
 │   ├── result/       # Type router → face or document result view
-│   └── detail/       # Full-screen history detail (face only)
-├── model/            # Data models (ProcessingRecord)
+│   │   └── document_collector_controller.dart  # Multi-page state
+│   └── detail/       # Type-routed history detail (face + document)
+├── model/            # Data models (ProcessingRecord, DocumentPage)
 ├── common/
 │   ├── exceptions/   # Typed processing exceptions
 │   ├── theme/        # Colors, typography
@@ -94,45 +96,42 @@ I went with feature-based folders rather than layer-based (grouping all controll
 
 The two-layer controller pattern (managers vs screen controllers) avoids the common GetX trap of putting everything in one giant controller. Managers own the data and business logic, screen controllers just orchestrate UI-specific state.
 
-## 🧠 Reasoning & Progress
+## 🧠 Progress
 
-### Step 1 — Model + Persistence
+1. **Model + Persistence** — `ProcessingRecord` with Hive, `HistoryManager` with reactive list. Chose Hive over SQLite: flat data, no relations, no queries beyond "load all".
+2. **Face Processing Pipeline** — ML Kit face detection → isolate-based grayscale compositing → save result. Heavy pixel work runs in `Isolate.run()` to keep the UI thread free.
+3. **Result Screen** — Before/after comparison, stats row, Done button.
+4. **Home Screen & Full Loop** — 2-column history grid with type badges, animated delete, empty state. Completed the capture → process → result → home loop.
+5. **Document Pipeline, Auto-Detection & Detail** — Auto-detection entry point (text recognizer first, face detection fallback). Luminance-based edge detection → crop + enhance → PDF. Type-routed detail screen for both face and document records.
+6. **Polish & Hardening** — Race condition guards, file cleanup, Android permissions, image picker constraints. UX: staggered animations, haptic feedback, custom page transitions, styled snackbars, app icon.
+7. **Bonus: OCR Text Extraction** — Persisted already-available recognized text. Built a collapsible card with copy-to-clipboard and in-text search with highlighted matches.
+8. **Bonus: Multi-page PDF** — Deferred PDF generation, page collector with thumbnail strip, drag-to-reorder, per-page removal with confirmation, "Add Page" with background processing overlay.
+9. **Code Audit & Cleanup** — Async file I/O, reentrance guards, temp file cleanup, dead code removal, file extraction, widget folder reorganization.
 
-Started with the data layer: a `ProcessingRecord` model (type, date, before/after image paths, metadata) persisted via Hive. The `HistoryManager` handles CRUD and exposes a reactive `RxList` sorted newest-first.
+## 🔑 Key Technical Decisions
 
-I chose Hive over SQLite because the data is simple key-value records with no relational queries — Hive is lighter and doesn't need code generation for basic operations (just adapters).
+### Bonus Feature Choice
 
-### Step 2 — Face Processing Pipeline
+The brief offered four bonus options (max 2): Real-time Camera Overlay, Multi-page PDF, Batch Processing, and OCR Text Extraction. I went with **OCR** and **Multi-page PDF**. OCR was low-hanging fruit — the document pipeline already runs text recognition, so the detected text just needed to be persisted and surfaced in the UI. Multi-page PDF adds the most user-facing value to the document flow and required an interesting architectural change (deferring PDF generation, introducing a page collector). Both build on existing infrastructure rather than requiring new native dependencies.
 
-The core feature: pick an image → detect faces with ML Kit → apply grayscale to face regions → save composite. The heavy image manipulation (decode, crop, grayscale, composite) runs in `Isolate.run()` to keep the UI thread free.
+### EXIF Orientation
 
-Key trade-off: ML Kit must run on the main isolate (platform channels), but the `image` package work is pure Dart and moves to a background isolate. This split keeps the UI responsive — the progress screen updates smoothly while processing happens.
+Real camera photos had offset face overlays while AI-generated images worked fine. Root cause: `image_picker` on iOS writes correctly-oriented pixels but keeps a stale EXIF tag. ML Kit reads the file natively (handles EXIF correctly), but the `image` package sees the stale tag and rotates *already-correct* pixels again — so the two disagree on where faces are.
 
-`bakeOrientation` is called before any cropping to handle EXIF rotation, which is critical on iOS where camera images come with orientation metadata rather than rotated pixels. (This later evolved — see Step 5 improvements.)
+Fixed with a normalize-once pattern: the orchestrator bakes EXIF orientation upfront in a dedicated isolate and re-encodes as JPEG (which strips the tag). Both ML Kit and the processing isolate then work from the same, correctly-oriented pixels. Small cost (~200–500ms extra) for eliminating an entire class of platform-specific bugs.
 
-### Step 3 — Result Screen
+### Luminance Edge Detection
 
-Before/after comparison with the original and processed images side by side. Extracted into a reusable `BeforeAfterComparison` widget. Stats row shows processing time, face count, and file size.
+Initial approach used text block bounds + padding to crop the document. This clipped content on pages with wide margins or sparse text. Replaced with luminance scanning: sample the paper brightness from the center of the text region, then scan outward from each seed edge row-by-row until brightness drops below 60% of the paper color. This finds actual paper boundaries regardless of text layout.
 
-### Step 4 — Home Screen & Full Loop
+### Perspective Transform — Why We Skip It
 
-Replaced the empty state with a 2-column history grid. Cards show the result image thumbnail, a colored type badge, and the formatted date. Long-press opens a delete confirmation bottom sheet.
+The brief mentions perspective transformation. A proper implementation requires a 3x3 homography matrix with bilinear pixel interpolation — the `image` package doesn't provide this. It would require either OpenCV (native dependency, breaks the pure-Dart isolate approach) or ~200 lines of custom matrix math. Conscious trade-off: pure Dart with zero native CV dependencies, at the cost of not straightening angled shots. The edge detection + crop still produces clean results for documents photographed roughly straight-on.
 
-This completed the full loop: capture → process → result → home → tap to revisit.
+### Isolate Strategy
 
-**File path fix:** During testing on iOS, I discovered that stored absolute paths broke between development builds because iOS rotates the app sandbox UUID. Fixed by storing filenames only and resolving the full path at runtime via `path_provider`. The original image is now also copied to the documents directory so it persists alongside the result.
+ML Kit requires the main isolate (platform channels to native iOS/Android APIs). Pixel manipulation is pure Dart and CPU-heavy (500ms–2s for a 12MP photo). Running both on main would freeze the UI. Solution: ML Kit stays on main, all pixel work moves to `Isolate.run()`. The progress bar and animations stay smooth while processing happens in the background. PDF generation stays on main too — it's just wrapping already-encoded bytes, not crunching pixels.
 
-**Refactoring:** Extracted shared patterns as they emerged:
-- `BottomSheetContainer` — shared wrapper used by both capture and delete sheets
-- `format_utils.dart` — centralized date, duration, and file size formatting
-- `path_utils.dart` — filename storage and runtime path resolution
+### File Path Strategy
 
-### Step 5 — Document Pipeline, Auto-Detection & Detail Screen
-
-Added auto-detection as the single entry point: text recognizer first (cheap), >= 3 text blocks → document flow, else → face detection fallback. Split the manager into an orchestrator + dedicated `FaceProcessor` / `DocumentProcessor`.
-
-**Document pipeline:** text recognition → luminance-based edge detection → crop + enhance → PDF. Initial approach used text block bounds + padding, but it clipped text — replaced with luminance scanning that finds actual paper edges by tracking brightness transitions. Perspective transform was skipped (would need OpenCV or custom homography — trade-off for pure Dart).
-
-**EXIF fix:** Real camera photos had offset face overlays while AI images worked fine. `image_picker` on iOS writes correctly-oriented pixels but keeps a stale EXIF tag, causing double rotation. Fixed with a normalize-once pattern: bake orientation upfront, feed the same normalized image to both ML Kit and the processing isolate.
-
-Detail screen with type-aware stats and PDF sharing. Document taps from the home grid open the PDF directly in the system viewer.
+iOS rotates the app sandbox UUID on every reinstall/rebuild, breaking stored absolute paths. We store relative filenames only and resolve the full path at runtime via `path_provider`. Original images are copied to the documents directory alongside results so everything persists together.
