@@ -5,6 +5,10 @@ A Flutter image processing app that auto-detects content type (faces or document
 - **Face Flow:** ML Kit face detection → crop faces → B&W filter → composite result
 - **Document Flow:** ML Kit text recognition → luminance edge detection → crop + enhance → PDF export
 
+## 📲 Demo
+
+https://github.com/user-attachments/assets/6bc6e3ec-4647-4984-8d53-4e444aa95aef
+
 ## 🛠️ Tools & Workflow
 
 | Tool | Role |
